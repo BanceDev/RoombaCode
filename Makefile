@@ -30,7 +30,7 @@ ifeq ($(OS),Windows_NT)
 		else \
 		( \
 			$(GITBINARY) config --global http.sslVerify false  && \
-			$(GITBINARY) clone clone https://code.osu.edu/fehelectronics/proteus_software/$(FIRMWAREREPO).git \
+			$(GITBINARY) clone https://code.osu.edu/fehelectronics/proteus_software/$(FIRMWAREREPO).git \
 		) \
 		) \
 	) 
