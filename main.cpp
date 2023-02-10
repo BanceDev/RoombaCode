@@ -1,8 +1,15 @@
+#include <FEHIO.h>
 #include <FEHLCD.h>
+#include <FEHUtility.h>
 
 int main(void)
 {
-    LCD.Clear(BLACK);
-    LCD.WriteLine("Hello, World!");
-	return 0;
+    AnalogInputPin CdS_cell(FEHIO::P0_0);
+    
+    while(true) {
+        LCD.Clear(BLACK);
+        LCD.Write(CdS_cell.Value());
+        Sleep(0.2);
+    }
+    return 0;
 }
