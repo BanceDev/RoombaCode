@@ -51,7 +51,7 @@ void DriveTrain::StopDriving() {
 // function to wait for bumper contact.
 void DriveTrain::AwaitBumper(bool bumper1, bool bumper2) {
     // waits for both bumpers to be pressed
-    while(!bumper1 && !bumper2);
+    while(bumper1 && bumper2);
     StopDriving();
 }
 
