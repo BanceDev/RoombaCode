@@ -17,13 +17,12 @@ class DriveTrain {
         FEHMotor rightMotor = FEHMotor(FEHMotor::Motor0,9.0);
         FEHMotor leftMotor = FEHMotor(FEHMotor::Motor1,9.0);
         DigitalInputPin backLeft = DigitalInputPin(FEHIO::P0_2);
-        DigitalInputPin backRight = DigitalInputPin(FEHIO::P3_7);
+        DigitalInputPin backRight = DigitalInputPin(FEHIO::P3_0);
         DigitalInputPin frontLeft = DigitalInputPin(FEHIO::P0_0);
         DigitalInputPin frontRight = DigitalInputPin(FEHIO::P0_1);
 
     public:
         DriveTrain();
-        void AwaitBumper(bool bumper1, bool bumper2);
         void DriveStraight(int speed);
         void TurnUntilBumper(int dir, int side, int speed);
         void DriveUntilBumper(int side, int speed);
@@ -48,12 +47,6 @@ void DriveTrain::StopDriving() {
     leftMotor.Stop();
 }
 
-// function to wait for bumper contact.
-void DriveTrain::AwaitBumper(bool bumper1, bool bumper2) {
-    // waits for both bumpers to be pressed
-    while(bumper1 && bumper2);
-    StopDriving();
-}
 
 // Drives straight until both bumpers are pressed
 // side can be front or back
@@ -62,9 +55,11 @@ void DriveTrain::DriveUntilBumper(int side, int speed) {
     DriveStraight(speed);
     
     if (side == 0) {
-        AwaitBumper(frontLeft.Value(), frontRight.Value());
+        while(frontLeft.Value() || frontRight.Value()){}
+        StopDriving();
     } else if (side == 1) {
-        AwaitBumper(backLeft.Value(), backRight.Value());
+        while(backLeft.Value() || backRight.Value()){}
+        StopDriving();
     }
 
 }
@@ -81,9 +76,11 @@ void DriveTrain::TurnUntilBumper(int dir, int side, int speed) {
     }
 
     if (side == 0) {
-        AwaitBumper(frontLeft.Value(), frontRight.Value());
+        while(frontLeft.Value() || frontRight.Value()){}
+        StopDriving();
     } else if (side == 1) {
-        AwaitBumper(backLeft.Value(), backRight.Value());
+        while(backLeft.Value() || backRight.Value()){}
+        StopDriving();
     }
 }
 
@@ -96,9 +93,9 @@ int main(void) {
 
     //Run the drive routine for the maze
     driveTrain.DriveUntilBumper(FRONT, 25);
-    driveTrain.TurnUntilBumper(RIGHT, BACK, 25);
+    driveTrain.TurnUntilBumper(RIGHT, BACK, -25);
     driveTrain.DriveUntilBumper(FRONT, 25);
-    driveTrain.TurnUntilBumper(LEFT, BACK, 25);
+    driveTrain.TurnUntilBumper(LEFT, BACK, -25);
     driveTrain.DriveUntilBumper(FRONT, 25);
 
     
