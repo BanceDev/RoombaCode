@@ -3,6 +3,17 @@
 #include <FEHLCD.h>
 #include <FEHIO.h>
 
+enum LineStates {
+
+    MIDDLE,
+
+    RIGHT,
+
+    LEFT
+
+};
+
+
 // class for the Drive train and its functions
 class DriveTrain {
     private:
@@ -16,6 +27,7 @@ class DriveTrain {
         DriveTrain();
         void DriveStraight(int speed);
         void StopDriving();
+        void FollowLine();
 
 };
 
@@ -34,6 +46,59 @@ void DriveTrain::DriveStraight(int speed) {
 void DriveTrain::StopDriving() {
     rightMotor.Stop();
     leftMotor.Stop();
+}
+
+// function to follow a line
+void DriveTrain::FollowLine() {
+
+
+    int state = MIDDLE; // Set the initial state
+
+    while (true) { // I will follow this line forever!
+        switch(state) {
+        // If I am in the middle of the line...
+
+            case MIDDLE:
+            // Set motor powers for driving straight
+
+                /* Drive */
+                if ( /* Right sensor is on line */ ) {
+
+                    state = RIGHT; // update a new state
+
+                }
+            /* Code for if left sensor is on the line */
+                break;
+
+            // If the right sensor is on the line...
+            case RIGHT:
+            // Set motor powers for right turn
+            /* Drive */
+                if( /* I no longer need to turn right… */ ) {
+
+                /* update a new state */
+
+                }
+
+                break;
+
+            // If the left sensor is on the line...
+            case LEFT:
+            /* Mirror operation of RIGHT state */
+
+                break;
+
+            default: // Error. Something is very wrong.
+
+                break;
+
+        }
+
+    // Sleep a bit
+
+    }
+
+    
 }
 
 
