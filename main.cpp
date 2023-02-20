@@ -13,6 +13,9 @@ enum LineStates {
 
 };
 
+#define LEFT_WHEEL 1
+#define RIGHT_WHEEL 0
+
 
 // class for the Drive train and its functions
 class DriveTrain {
@@ -28,7 +31,7 @@ class DriveTrain {
         AnalogInputPin rightSensor = AnalogInputPin(FEHIO::P2_0);
         AnalogInputPin middleSensor = AnalogInputPin(FEHIO::P2_1);
         AnalogInputPin leftSensor = AnalogInputPin(FEHIO::P2_2);
-        
+                
 
     public:
         DriveTrain();
@@ -37,6 +40,7 @@ class DriveTrain {
         void FollowLine();
         void DriveTurn(int speed1, int speed2);
         void DriveDistance(float distance, int speed);
+        void TurnDegrees(float deg, int dir);
 
 };
 
@@ -66,6 +70,19 @@ void DriveTrain::DriveTurn(int speed1, int speed2) {
     // drive both wheels at given speed
     rightMotor.SetPercent(speed1);
     leftMotor.SetPercent(speed2);
+}
+
+void DriveTrain::TurnDegrees(float deg, int dir) {
+    // turn the specicied direction for a number of degrees
+    float radius = 1.25;
+    float degrees = deg;
+    float arcLen = radius * degrees;
+    float circum = 7.85;
+
+    if (dir == 0) {
+        while (rightEncoder.Counts() < (318/circum))
+    }
+
 }
 
 // function to stop both wheels 
