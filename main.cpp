@@ -37,7 +37,7 @@ class DriveTrain {
         void FollowLine();
         void DriveTurn(int speed1, int speed2);
         void DriveDistance(float distance, int speed);
-        void TurnDegrees(float deg, int dir);
+        void TurnDegrees(float deg, int dir, int speed);
 
 };
 
@@ -69,7 +69,7 @@ void DriveTrain::DriveTurn(int speed1, int speed2) {
     leftMotor.SetPercent(speed2);
 }
 
-void DriveTrain::TurnDegrees(float deg, int dir) {
+void DriveTrain::TurnDegrees(float deg, int dir, int speed) {
     // turn the specicied direction for a number of degrees
     leftEncoder.ResetCounts();
     rightEncoder.ResetCounts();
@@ -77,11 +77,11 @@ void DriveTrain::TurnDegrees(float deg, int dir) {
     LCD.WriteAt(leftEncoder.Counts(), 0, 0); 
     if (dir == 0) { // turn to the left
         while (rightEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
-            DriveTurn(25, 0);
+            DriveTurn(speed, 0);
         }
     } else if (dir == 1) { // turn to the right
         while (leftEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
-            DriveTurn(0, 25);
+            DriveTurn(0, speed);
             LCD.WriteAt(leftEncoder.Counts(), 0, 0); 
         }
     }
@@ -160,9 +160,9 @@ int main(void) {
     //Initialize the Drive Train
     DriveTrain driveTrain;
     driveTrain.DriveDistance(14, 25);
-    driveTrain.TurnDegrees(90, LEFT_TURN);
+    driveTrain.TurnDegrees(90, LEFT_TURN, 25);
     driveTrain.DriveDistance(10, 25);
-    driveTrain.TurnDegrees(90, RIGHT_TURN);
+    driveTrain.TurnDegrees(90, RIGHT_TURN, 25);
     driveTrain.DriveDistance(4, 25);
     
     return 0;
