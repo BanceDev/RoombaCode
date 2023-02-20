@@ -5,13 +5,9 @@
 #include <cmath>
 
 enum LineStates {
-
     MIDDLE,
-
     RIGHT,
-
     LEFT
-
 };
 
 #define RIGHT_TURN 1
@@ -82,7 +78,6 @@ void DriveTrain::TurnDegrees(float deg, int dir) {
     if (dir == 0) { // turn to the left
         while (rightEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
             DriveTurn(25, 0);
-            
         }
     } else if (dir == 1) { // turn to the right
         while (leftEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
@@ -99,8 +94,6 @@ void DriveTrain::StopDriving() {
     rightMotor.Stop();
     leftMotor.Stop();
 }
-
-
 
 // function to follow a line
 void DriveTrain::FollowLine() {
@@ -156,10 +149,7 @@ void DriveTrain::FollowLine() {
 
         // Sleep a bit
         Sleep(0.1);
-
     }
-
-    
 }
 
 
