@@ -80,7 +80,9 @@ void DriveTrain::TurnDegrees(float deg, int dir) {
     float circum = 7.85;
 
     if (dir == 0) {
-        while (rightEncoder.Counts() < (318/circum))
+        while (rightEncoder.Counts() < (318/circum)) {
+            
+        }
     }
 
 }
