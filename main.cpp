@@ -3,15 +3,9 @@
 #include <FEHLCD.h>
 #include <FEHIO.h>
 #include <cmath>
+#include <algorithm>
+using namespace std;
 
-enum LineStates {
-    MIDDLE,
-    RIGHT,
-    LEFT
-};
-
-#define RIGHT_TURN 1
-#define LEFT_TURN 0
 
 
 // class for the Drive train and its functions
@@ -20,24 +14,21 @@ class DriveTrain {
         // declare all of the motors and inputs
         // must be done like this since FEHMotor has no default constructor
         // cries in lack of modular capabilities TwT
-        FEHMotor rightMotor = FEHMotor(FEHMotor::Motor0,9.0);
-        FEHMotor leftMotor = FEHMotor(FEHMotor::Motor1,9.0);
+        FEHMotor motor0 = FEHMotor(FEHMotor::Motor0,9.0);
+        FEHMotor motor1 = FEHMotor(FEHMotor::Motor1,9.0);
+        FEHMotor motor2 = FEHMotor(FEHMotor::Motor2,9.0);
         DigitalEncoder rightEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder leftEncoder = DigitalEncoder(FEHIO::P0_1);
 
-        AnalogInputPin rightSensor = AnalogInputPin(FEHIO::P2_0);
-        AnalogInputPin middleSensor = AnalogInputPin(FEHIO::P2_1);
-        AnalogInputPin leftSensor = AnalogInputPin(FEHIO::P2_2);
                 
 
     public:
         DriveTrain();
-        void DriveStraight(int speed);
-        void StopDriving();
-        void FollowLine();
-        void DriveTurn(int speed1, int speed2);
-        void DriveDistance(float distance, int speed);
-        void TurnDegrees(float deg, int dir);
+        void DriveVertical(float speed);
+        void DriveHorizontal(float speed);
+        void DriveRotate(float speed);
+        void DriveCombined(float speedX, float speedY, float speedRot);
+        float FindAbsMax(float speed1, float speed2, float speed3);
 
 };
 
@@ -45,114 +36,54 @@ DriveTrain::DriveTrain() {
 
 }
 
-// function to drive both wheels at the same speed for straight driving
-void DriveTrain::DriveStraight(int speed) {
-    // drive both wheels at given speed
-    rightMotor.SetPercent(speed);
-    leftMotor.SetPercent(speed);
+void DriveTrain::DriveVertical(float speed) {
+    motor2.SetPercent(speed);
+    motor1.SetPercent(-speed);
+    
 }
 
-// funtion to drive a given distance
-void DriveTrain::DriveDistance(float distance, int speed) {
-    leftEncoder.ResetCounts();
-    rightEncoder.ResetCounts();
-    while (leftEncoder.Counts() < (distance * 40.5) && rightEncoder.Counts() < (distance * 40.5)) {
-        DriveStraight(speed);
+void DriveTrian::DriveHorizontal(float speed) {
+    motor2.SetPercent(speed/2);
+    motor1.SetPercent(speed/2);
+    motor0.SetPercent(-speed);
+    
+}
+
+void DriveTrain::DriveRotate(float speed) {
+    motor0.SetPercent(speed);
+    motor1.SetPercent(speed);
+    motor2.SetPercent(speed);
+}
+
+void DriveTrain::DriveCombined(float speedX, float speedY, float speedRot, int speedConst) {
+    float motorZeroSpeed = -speedX;
+    float motorOneSpeed = speedX/2;
+    float motorTwoSpeed = speedX/2;
+
+    motorOneSpeed += -(speedY * (sqrt(3)/2));
+    motorTwoSpeed += (speedY * (sqrt(3)/2));
+
+    motorZeroSpeed += speedRot;
+    motorOneSpeed += speedRot;
+    motorTwoSpeed += speedRot;
+
+    if (abs(motorZeroSpeed) > 1 || abs(motorOneSpeed) > 1 || abs(motorTwoSpeed) > 1) {
+        float maxSpeed = FindAbsMax(motorZeroSpeed, motorOneSpeed, motorTwoSpeed);
+        motorZeroSpeed /= maxSpeed;
+        motorOneSpeed /= maxSpeed;
+        motorTwoSpeed /= maxSpeed;
     }
-    StopDriving();
+    motor0.SetPercent(motorZeroSpeed * speedConst);
+    motor1.SetPercent(motorOneSpeed * speedConst);
+    motor2.SetPercent(motorTwoSpeed * speedConst);
 }
 
-
-void DriveTrain::DriveTurn(int speed1, int speed2) {
-    // drive both wheels at given speed
-    rightMotor.SetPercent(speed1);
-    leftMotor.SetPercent(speed2);
+float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
+    float maxSpeed;
+    maxSpeed = max(abs(speed1), abs(speed2));
+    maxSpeed = max(maxSpeed, abs(speed3));
+    return maxSpeed;
 }
-
-void DriveTrain::TurnDegrees(float deg, int dir) {
-    // turn the specicied direction for a number of degrees
-    leftEncoder.ResetCounts();
-    rightEncoder.ResetCounts();
-
-    LCD.WriteAt(leftEncoder.Counts(), 0, 0); 
-    if (dir == 0) { // turn to the left
-        while (rightEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
-            DriveTurn(25, 0);
-        }
-    } else if (dir == 1) { // turn to the right
-        while (leftEncoder.Counts() < ((2 * M_PI * 7 * (deg/360)) * 40.5)) {
-            DriveTurn(0, 25);
-            LCD.WriteAt(leftEncoder.Counts(), 0, 0); 
-        }
-    }
-    StopDriving();
-
-}
-
-// function to stop both wheels 
-void DriveTrain::StopDriving() {
-    rightMotor.Stop();
-    leftMotor.Stop();
-}
-
-// function to follow a line
-void DriveTrain::FollowLine() {
-
-
-    int state = MIDDLE; // Set the initial state
-
-    while (true) { // I will follow this line forever!
-        switch(state) {
-        // If I am in the middle of the line...
-
-            case MIDDLE:
-                DriveStraight(25);
-                // Set motor powers for driving straight
-
-                /* Drive */
-                if (rightSensor.Value() > 2.3) {
-                    state = RIGHT; // update a new state
-                }
-                /* Code for if left sensor is on the line */
-                if (leftSensor.Value() > 2.3) {
-                    state = LEFT; // update to left
-                }
-                break;
-
-            // If the right sensor is on the line...
-            case RIGHT:
-                DriveTurn(0,25);
-                // Set motor powers for right turn
-                /* Drive */
-                if(rightSensor.Value() < 1.5) {
-                    state = MIDDLE;
-                }
-
-                break;
-
-            // If the left sensor is on the line...
-            case LEFT:
-            /* Mirror operation of RIGHT state */
-                DriveTurn(25,0);
-                // Set motor powers for right turn
-                /* Drive */
-                if(leftSensor.Value() > 1.5) {
-                    state = MIDDLE;
-                }
-                break;
-
-            default: // Error. Something is very wrong.
-
-                break;
-
-        }
-
-        // Sleep a bit
-        Sleep(0.1);
-    }
-}
-
-
 
 
 int main(void) {
