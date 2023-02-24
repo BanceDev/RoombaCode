@@ -90,11 +90,6 @@ int main(void) {
 
     //Initialize the Drive Train
     DriveTrain driveTrain;
-    driveTrain.DriveDistance(14, 25);
-    driveTrain.TurnDegrees(90, LEFT_TURN, 25);
-    driveTrain.DriveDistance(10, 25);
-    driveTrain.TurnDegrees(90, RIGHT_TURN, 25);
-    driveTrain.DriveDistance(4, 25);
     
     return 0;
 }
