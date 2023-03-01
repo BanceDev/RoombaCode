@@ -6,7 +6,33 @@
 #include <algorithm>
 using namespace std;
 
+struct Vector2 {
+    float x, y;
 
+    // a function to subtract one vector from another
+    // used to get vector line between two points
+    struct Vector2 Subtract(struct Vector2 other) {
+        struct Vector2 result;
+        result.x = other.x - x;
+        result.y = other.y - y;
+        return result;
+    }
+    
+    /* this function normalizes the vector
+    this makes it's length equal to 1, useful for maintaining a constant velocity*/
+    void Normalize()
+    {
+        float magnitude = sqrt(pow(x,2) + pow(y,2));
+        x = x / magnitude;
+        y = y / magnitude;
+    }
+    
+    // this function returns the magnitude of the vector
+    float Magnitude() {
+        return sqrt(pow(x,2) + pow(y,2));
+    }
+    
+};
 
 // class for the Drive train and its functions
 class DriveTrain {
@@ -27,7 +53,8 @@ class DriveTrain {
         void DriveVertical(float speed);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
-        void DriveCombined(float speedX, float speedY, float speedRot);
+        void DriveCombined(Vector2 direction, float rotation, int speed);
+        void DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed);
         float FindAbsMax(float speed1, float speed2, float speed3);
 
 };
@@ -42,7 +69,7 @@ void DriveTrain::DriveVertical(float speed) {
     
 }
 
-void DriveTrian::DriveHorizontal(float speed) {
+void DriveTrain::DriveHorizontal(float speed) {
     motor2.SetPercent(speed/2);
     motor1.SetPercent(speed/2);
     motor0.SetPercent(-speed);
@@ -55,17 +82,17 @@ void DriveTrain::DriveRotate(float speed) {
     motor2.SetPercent(speed);
 }
 
-void DriveTrain::DriveCombined(float speedX, float speedY, float speedRot, int speedConst) {
-    float motorZeroSpeed = -speedX;
-    float motorOneSpeed = speedX/2;
-    float motorTwoSpeed = speedX/2;
+void DriveTrain::DriveCombined(Vector2 direction, float rotation, int speed) {
+    float motorZeroSpeed = -direction.x;
+    float motorOneSpeed = direction.x/2;
+    float motorTwoSpeed = direction.x/2;
 
-    motorOneSpeed += -(speedY * (sqrt(3)/2));
-    motorTwoSpeed += (speedY * (sqrt(3)/2));
+    motorOneSpeed += -(direction.y * (sqrt(3)/2));
+    motorTwoSpeed += (direction.y * (sqrt(3)/2));
 
-    motorZeroSpeed += speedRot;
-    motorOneSpeed += speedRot;
-    motorTwoSpeed += speedRot;
+    motorZeroSpeed += rotation;
+    motorOneSpeed += rotation;
+    motorTwoSpeed += rotation;
 
     if (abs(motorZeroSpeed) > 1 || abs(motorOneSpeed) > 1 || abs(motorTwoSpeed) > 1) {
         float maxSpeed = FindAbsMax(motorZeroSpeed, motorOneSpeed, motorTwoSpeed);
@@ -73,9 +100,16 @@ void DriveTrain::DriveCombined(float speedX, float speedY, float speedRot, int s
         motorOneSpeed /= maxSpeed;
         motorTwoSpeed /= maxSpeed;
     }
-    motor0.SetPercent(motorZeroSpeed * speedConst);
-    motor1.SetPercent(motorOneSpeed * speedConst);
-    motor2.SetPercent(motorTwoSpeed * speedConst);
+    motor0.SetPercent(motorZeroSpeed * speed);
+    motor1.SetPercent(motorOneSpeed * speed);
+    motor2.SetPercent(motorTwoSpeed * speed);
+}
+
+void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed) {
+    // get the vector between the two points
+    Vector2 direction = targetPos.Subtract(currentPos);
+    direction.Normalize();
+    DriveCombined(direction, rotation, speed);
 }
 
 float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
