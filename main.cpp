@@ -46,6 +46,7 @@ class DriveTrain {
         DigitalEncoder rightEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder leftEncoder = DigitalEncoder(FEHIO::P0_1);
 
+        AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
 
     public:
@@ -57,6 +58,7 @@ class DriveTrain {
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed);
         void StopDriving();
         float FindAbsMax(float speed1, float speed2, float speed3);
+        float CdSValue();
 
 };
 
@@ -126,12 +128,35 @@ float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
     return maxSpeed;
 }
 
+float DriveTrain::CdSValue() {
+    return CdS.Value();
+}
+
 
 int main(void) {
 
     //Initialize the Drive Train
     DriveTrain driveTrain;
-    Vector2 dir;
+
+    // 0 - front
+    // 1 - back left
+    // 2 - back right
+    // positive speed turns cw.
+
+    while (true) {
+        LCD.WriteAt(driveTrain.CdSValue(), 10, 10);
+        LCD.Clear();
+    }
+
+
+    //deetz test code
+    driveTrain.DriveVertical(25);
+    Sleep(3.0);
+    driveTrain.StopDriving();
+
+    
+    //og code
+    /*Vector2 dir;
     dir.x = -1;
     dir.y = -1;
     driveTrain.DriveVertical(25);
@@ -145,7 +170,7 @@ int main(void) {
     driveTrain.StopDriving();
     driveTrain.DriveRotate(25);
     Sleep(3.0);
-    driveTrain.StopDriving();
+    driveTrain.StopDriving();*/
     
     return 0;
 }
