@@ -55,12 +55,19 @@ class DriveTrain {
         void DriveRotate(float speed);
         void DriveCombined(Vector2 direction, float rotation, int speed);
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed);
+        void StopDriving();
         float FindAbsMax(float speed1, float speed2, float speed3);
 
 };
 
 DriveTrain::DriveTrain() {
 
+}
+
+void DriveTrain::StopDriving() {
+    motor0.SetPercent(0);
+    motor1.SetPercent(0);
+    motor2.SetPercent(0);
 }
 
 void DriveTrain::DriveVertical(float speed) {
@@ -72,7 +79,7 @@ void DriveTrain::DriveVertical(float speed) {
 void DriveTrain::DriveHorizontal(float speed) {
     motor2.SetPercent(speed/2);
     motor1.SetPercent(speed/2);
-    motor0.SetPercent(-speed);
+    motor0.SetPercent(-speed * 0.9);
     
 }
 
@@ -124,6 +131,21 @@ int main(void) {
 
     //Initialize the Drive Train
     DriveTrain driveTrain;
+    Vector2 dir;
+    dir.x = -1;
+    dir.y = -1;
+    driveTrain.DriveVertical(25);
+    Sleep(3.0);
+    driveTrain.StopDriving();
+    driveTrain.DriveHorizontal(25);
+    Sleep(3.0);
+    driveTrain.StopDriving();
+    driveTrain.DriveCombined(dir, 0, 25);
+    Sleep(3.0);
+    driveTrain.StopDriving();
+    driveTrain.DriveRotate(25);
+    Sleep(3.0);
+    driveTrain.StopDriving();
     
     return 0;
 }
