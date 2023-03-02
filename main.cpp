@@ -46,7 +46,7 @@ class DriveTrain {
         DigitalEncoder rightEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder leftEncoder = DigitalEncoder(FEHIO::P0_1);
 
-        AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
+        AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_7);
                 
 
     public:
@@ -143,15 +143,9 @@ int main(void) {
     // 2 - back right
     // positive speed turns cw.
 
-    while (true) {
-        LCD.WriteAt(driveTrain.CdSValue(), 10, 10);
-        LCD.Clear();
-    }
-
-
     //deetz test code
-    driveTrain.DriveVertical(25);
-    Sleep(3.0);
+    driveTrain.DriveVertical(50);
+    Sleep(1.5);
     driveTrain.StopDriving();
 
     
