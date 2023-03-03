@@ -60,12 +60,11 @@ class DriveTrain {
         void DriveForward(float speed, int forwardMotor);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
-        void DriveCombined(Vector2 direction, float rotation, int speed);
-        void DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed);
+        void DriveCombined(float angle, int speed);
+        void DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed);
         void StopDriving();
         void Initialize();
         int GetColor();
-        float FindAbsMax(float speed1, float speed2, float speed3);
 
 };
 
@@ -116,46 +115,27 @@ void DriveTrain::DriveRotate(float speed) {
 
 // Drive in any direction and with rotation.
 // TODO: Add a way to make this field centric and not robot centric
-void DriveTrain::DriveCombined(Vector2 direction, float rotation, int speed) {
-    float motorZeroSpeed = -direction.x;
-    float motorOneSpeed = direction.x/2;
-    float motorTwoSpeed = direction.x/2;
+void DriveTrain::DriveCombined(float angle, int speed) {
+    float motorZeroSpeed = speed * sin(angle);
+    float motorOneSpeed = 0.5 * speed * sin(angle) + (sqrt(3)/2) * speed * cos(angle);
+    float motorTwoSpeed = -0.5 * speed * sin(angle) + (sqrt(3)/2) * speed * cos(angle);
 
-    motorOneSpeed += -(direction.y * (sqrt(3)/2));
-    motorTwoSpeed += (direction.y * (sqrt(3)/2));
-
-    motorZeroSpeed += rotation;
-    motorOneSpeed += rotation;
-    motorTwoSpeed += rotation;
-
-    if (abs(motorZeroSpeed) > 1 || abs(motorOneSpeed) > 1 || abs(motorTwoSpeed) > 1) {
-        float maxSpeed = FindAbsMax(motorZeroSpeed, motorOneSpeed, motorTwoSpeed);
-        motorZeroSpeed /= maxSpeed;
-        motorOneSpeed /= maxSpeed;
-        motorTwoSpeed /= maxSpeed;
-    }
-    motor0.SetPercent(motorZeroSpeed * speed);
-    motor1.SetPercent(motorOneSpeed * speed);
-    motor2.SetPercent(motorTwoSpeed * speed);
+    motor0.SetPercent(motorZeroSpeed);
+    motor1.SetPercent(motorOneSpeed);
+    motor2.SetPercent(motorTwoSpeed);
 }
 
 // Use the Drive Combined function to drive to a point
 // For this to work the robot needs to be oriented with motor zero at the top
 // TODO: Make this field centric
-void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed) {
+void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed) {
     // get the vector between the two points
     Vector2 direction = targetPos.Subtract(currentPos);
     direction.Normalize();
-    DriveCombined(direction, rotation, speed);
+    float angle = atan(direction.y/direction.x);
+    DriveCombined(angle, speed);
 }
 
-// Utility function to find the abs max for the DriveCombined function
-float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
-    float maxSpeed;
-    maxSpeed = max(abs(speed1), abs(speed2));
-    maxSpeed = max(maxSpeed, abs(speed3));
-    return maxSpeed;
-}
 
 // Returns the color that the CdS Cell is seeing
 int DriveTrain::GetColor() {
