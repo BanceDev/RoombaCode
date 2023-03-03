@@ -47,8 +47,9 @@ class DriveTrain {
         FEHMotor motor0 = FEHMotor(FEHMotor::Motor0,9.0);
         FEHMotor motor1 = FEHMotor(FEHMotor::Motor1,9.0);
         FEHMotor motor2 = FEHMotor(FEHMotor::Motor2,9.0);
-        DigitalEncoder rightEncoder = DigitalEncoder(FEHIO::P0_0);
-        DigitalEncoder leftEncoder = DigitalEncoder(FEHIO::P0_1);
+        DigitalEncoder motorZeroEncoder = DigitalEncoder(FEHIO::P0_0);
+        DigitalEncoder motorOneEncoder = DigitalEncoder(FEHIO::P0_1);
+        DigitalEncoder motorTwoEncoder = DigitalEncoder(FEHIO::P0_2);
 
         AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
