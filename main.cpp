@@ -6,6 +6,10 @@
 #include <algorithm>
 using namespace std;
 
+#define RED 0
+#define BLUE 1
+#define OFF 2
+
 struct Vector2 {
     float x, y;
 
@@ -46,51 +50,71 @@ class DriveTrain {
         DigitalEncoder rightEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder leftEncoder = DigitalEncoder(FEHIO::P0_1);
 
-        AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_7);
+        AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
 
     public:
+        // Delcaration for all the functions below
         DriveTrain();
-        void DriveVertical(float speed);
+        void DriveForward(float speed, int forwardMotor);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
         void DriveCombined(Vector2 direction, float rotation, int speed);
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed);
         void StopDriving();
+        void Initialize();
+        int GetColor();
         float FindAbsMax(float speed1, float speed2, float speed3);
-        float CdSValue();
 
 };
 
+// Default Constructor
 DriveTrain::DriveTrain() {
 
 }
 
+// Function to stop all the motors
 void DriveTrain::StopDriving() {
     motor0.SetPercent(0);
     motor1.SetPercent(0);
     motor2.SetPercent(0);
 }
 
-void DriveTrain::DriveVertical(float speed) {
-    motor2.SetPercent(speed);
-    motor1.SetPercent(-speed);
+// Drive forward in the direction of the given motor
+void DriveTrain::DriveForward(float speed, int forwardMotor) {
+    if (forwardMotor == 0) { // Motor 0
+        motor2.SetPercent(speed);
+        motor1.SetPercent(-speed);
+    } else if (forwardMotor == 1) { // Motor 1
+        motor0.SetPercent(speed);
+        motor2.SetPercent(-speed);
+    } else {  // Motor 2
+        motor0.SetPercent(-speed);
+        motor1.SetPercent(speed);
+    }
+    
     
 }
 
+// Drive Horizontol
+// Currently only parallel to motor 0
+// TODO: Update it to be like DriveForward
 void DriveTrain::DriveHorizontal(float speed) {
     motor2.SetPercent(speed/2);
     motor1.SetPercent(speed/2);
-    motor0.SetPercent(-speed * 0.9);
+    motor0.SetPercent(-speed);
     
 }
 
+// Rotate the robot
 void DriveTrain::DriveRotate(float speed) {
     motor0.SetPercent(speed);
     motor1.SetPercent(speed);
     motor2.SetPercent(speed);
 }
 
+// Drive in any direction and with rotation.
+// TODO: Add a way to make this field centric and not robot centric
 void DriveTrain::DriveCombined(Vector2 direction, float rotation, int speed) {
     float motorZeroSpeed = -direction.x;
     float motorOneSpeed = direction.x/2;
@@ -114,6 +138,9 @@ void DriveTrain::DriveCombined(Vector2 direction, float rotation, int speed) {
     motor2.SetPercent(motorTwoSpeed * speed);
 }
 
+// Use the Drive Combined function to drive to a point
+// For this to work the robot needs to be oriented with motor zero at the top
+// TODO: Make this field centric
 void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotation, float speed) {
     // get the vector between the two points
     Vector2 direction = targetPos.Subtract(currentPos);
@@ -121,6 +148,7 @@ void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, float rotat
     DriveCombined(direction, rotation, speed);
 }
 
+// Utility function to find the abs max for the DriveCombined function
 float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
     float maxSpeed;
     maxSpeed = max(abs(speed1), abs(speed2));
@@ -128,43 +156,115 @@ float DriveTrain::FindAbsMax(float speed1, float speed2, float speed3) {
     return maxSpeed;
 }
 
-float DriveTrain::CdSValue() {
-    return CdS.Value();
+// Returns the color that the CdS Cell is seeing
+int DriveTrain::GetColor() {
+    if (CdS.Value() < 0.3) {
+        return RED;
+    } else if (0.3 < CdS.Value() && CdS.Value() < 1.5) {
+        return BLUE;
+    } 
+
+    return OFF;
+}
+
+// initializes the drive train when the light turns on
+void DriveTrain::Initialize() {
+    while (GetColor() == OFF || GetColor() == BLUE) {}
+}
+
+
+
+// Class for the Robot
+// Will bring in all the classes for the mechanisms
+// Functions will be the different routines
+class Robot {
+    private:
+        DriveTrain dt;
+    public:
+        Robot();
+        void Checkpoint1();
+};
+
+// Default Constructor
+Robot::Robot() {
+
+}
+
+// Routine for the first checkpoint
+void Robot::Checkpoint1() {
+    // Initialize on the light
+    dt.Initialize();
+    // Drive of launchpad
+    dt.DriveForward(30, 0);
+    Sleep(0.7);
+    dt.StopDriving();
+    // Rotate to face ramp
+    dt.DriveRotate(30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive up ramp
+    dt.DriveForward(50, 0);
+    Sleep(2.7);
+    dt.StopDriving();
+    // Rotate to face wall
+    dt.DriveRotate(-30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Align with wall
+    dt.DriveForward(-30, 1);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Drive out to face kiosk
+    dt.DriveForward(30, 1);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Rotate to orient towards kiosk
+    dt.DriveRotate(-30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive into kiosk
+    dt.DriveForward(-40, 2);
+    Sleep(2.5);
+    dt.StopDriving();
+    // Drive off kiosk
+    dt.DriveForward(40, 2);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Rotate to face wall
+    dt.DriveRotate(-30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive into wall
+    dt.DriveForward(40,0);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Pull off wall
+    dt.DriveForward(-40, 0);
+    Sleep(0.3);
+    dt.StopDriving();
+    // Rotate to face ramp
+    dt.DriveRotate(-30);
+    Sleep(0.9);
+    dt.StopDriving();
+    // Drive down ramp
+    dt.DriveForward(30, 0);
+    Sleep(3.5);
+    dt.StopDriving();
+
 }
 
 
 int main(void) {
 
-    //Initialize the Drive Train
-    DriveTrain driveTrain;
+    Robot robot;
+
+    robot.Checkpoint1();
 
     // 0 - front
     // 1 - back left
     // 2 - back right
     // positive speed turns cw.
 
-    //deetz test code
-    driveTrain.DriveVertical(50);
-    Sleep(1.5);
-    driveTrain.StopDriving();
-
-    
-    //og code
-    /*Vector2 dir;
-    dir.x = -1;
-    dir.y = -1;
-    driveTrain.DriveVertical(25);
-    Sleep(3.0);
-    driveTrain.StopDriving();
-    driveTrain.DriveHorizontal(25);
-    Sleep(3.0);
-    driveTrain.StopDriving();
-    driveTrain.DriveCombined(dir, 0, 25);
-    Sleep(3.0);
-    driveTrain.StopDriving();
-    driveTrain.DriveRotate(25);
-    Sleep(3.0);
-    driveTrain.StopDriving();*/
     
     return 0;
 }
