@@ -68,7 +68,6 @@ class DriveTrain {
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed);
         void StopDriving();
         void Initialize();
-        void ShowEncoders();
         int GetColor();
 
 };
@@ -85,15 +84,6 @@ void DriveTrain::StopDriving() {
     motor2.SetPercent(0);
 }
 
-void DriveTrain::ShowEncoders() {
-    LCD.Clear(BLACK);
-    while(true) {
-        LCD.WriteAt(motorOneEncoder.Counts(), 0, 0);
-        LCD.WriteAt(motorTwoEncoder.Counts(), 0, 20);
-        Sleep(0.2);
-    }
-    
-}
 
 // Drive forward in the direction of the given motor
 void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
@@ -104,8 +94,9 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
         motor1.SetPercent(-speed);
         LCD.Clear();
         while(((abs(motorOneEncoder.Counts()) + abs(motorTwoEncoder.Counts()))/2) < (35.07 * distance)) {
-            LCD.WriteAt(motorOneEncoder.Counts(), 0, 0);
-            LCD.WriteAt(motorTwoEncoder.Counts(), 0, 20);
+            LCD.WriteAt(motorZeroEncoder.Counts(), 0, 0);
+            LCD.WriteAt(motorOneEncoder.Counts(), 0, 20);
+            LCD.WriteAt(motorTwoEncoder.Counts(), 0, 40);
         }
         StopDriving();
     } else if (forwardMotor == 1) { // Motor 1
@@ -259,7 +250,7 @@ Robot::Robot() {
 }*/
 
 void Robot::EncoderTest() {
-    dt.ShowEncoders();
+    dt.DriveForward(35, 0, 25);
 }
 
 int main(void) {
