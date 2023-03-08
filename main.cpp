@@ -2,6 +2,7 @@
 #include <FEHMotor.h>
 #include <FEHLCD.h>
 #include <FEHIO.h>
+#include <FEHRPS.h>
 #include <cmath>
 #include <algorithm>
 using namespace std;
@@ -43,7 +44,10 @@ class DriveTrain {
     private:
         // declare all of the motors and inputs
         // must be done like this since FEHMotor has no default constructor
-        // cries in lack of modular capabilities TwT
+        // 0 - front
+        // 1 - back left
+        // 2 - back right
+        // positive speed turns cw.
         FEHMotor motor0 = FEHMotor(FEHMotor::Motor0,9.0);
         FEHMotor motor1 = FEHMotor(FEHMotor::Motor1,9.0);
         FEHMotor motor2 = FEHMotor(FEHMotor::Motor2,9.0);
@@ -57,13 +61,14 @@ class DriveTrain {
     public:
         // Delcaration for all the functions below
         DriveTrain();
-        void DriveForward(float speed, int forwardMotor);
+        void DriveForward(float speed, int forwardMotor, int distance);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed);
         void StopDriving();
         void Initialize();
+        void ShowEncoders();
         int GetColor();
 
 };
@@ -80,11 +85,29 @@ void DriveTrain::StopDriving() {
     motor2.SetPercent(0);
 }
 
+void DriveTrain::ShowEncoders() {
+    LCD.Clear(BLACK);
+    while(true) {
+        LCD.WriteAt(motorOneEncoder.Counts(), 0, 0);
+        LCD.WriteAt(motorTwoEncoder.Counts(), 0, 20);
+        Sleep(0.2);
+    }
+    
+}
+
 // Drive forward in the direction of the given motor
-void DriveTrain::DriveForward(float speed, int forwardMotor) {
+void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
     if (forwardMotor == 0) { // Motor 0
+        motorOneEncoder.ResetCounts();
+        motorTwoEncoder.ResetCounts();
         motor2.SetPercent(speed);
         motor1.SetPercent(-speed);
+        LCD.Clear();
+        while(((abs(motorOneEncoder.Counts()) + abs(motorTwoEncoder.Counts()))/2) < (35.07 * distance)) {
+            LCD.WriteAt(motorOneEncoder.Counts(), 0, 0);
+            LCD.WriteAt(motorTwoEncoder.Counts(), 0, 20);
+        }
+        StopDriving();
     } else if (forwardMotor == 1) { // Motor 1
         motor0.SetPercent(speed);
         motor2.SetPercent(-speed);
@@ -164,6 +187,7 @@ class Robot {
     public:
         Robot();
         void Checkpoint1();
+        void EncoderTest();
 };
 
 // Default Constructor
@@ -172,7 +196,7 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
-void Robot::Checkpoint1() {
+/*void Robot::Checkpoint1() {
     // Initialize on the light
     dt.Initialize();
     // Drive of launchpad
@@ -232,19 +256,18 @@ void Robot::Checkpoint1() {
     Sleep(3.5);
     dt.StopDriving();
 
-}
+}*/
 
+void Robot::EncoderTest() {
+    dt.ShowEncoders();
+}
 
 int main(void) {
 
+    // declare robot class
     Robot robot;
 
-    robot.Checkpoint1();
-
-    // 0 - front
-    // 1 - back left
-    // 2 - back right
-    // positive speed turns cw.
+    robot.EncoderTest();
 
     
     return 0;
