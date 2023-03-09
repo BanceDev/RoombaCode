@@ -5,7 +5,6 @@
 #include <FEHRPS.h>
 #include <cmath>
 #include <algorithm>
-#include <ctime>
 using namespace std;
 
 #define RED 0
@@ -102,7 +101,7 @@ void DriveTrain::StopDriving() {
 
 // function to reset all the PID variables
 void DriveTrain::ResetPID() {
-    prevTime = time(NULL);
+    prevTime = TimeNow();
     prevError = 0;
     motorZeroCounts = 0;
     motorOneCounts = 0;
@@ -130,7 +129,7 @@ float DriveTrain::PIDAdjustment(int motor, float expectedSpeed) {
         deltaCounts = motorTwoEncoder.Counts() - motorTwoCounts;
     }
 
-    deltaTime = 0.005;
+    deltaTime = TimeNow() - prevTime;
 
     actSpeed = (1/CPI) * (deltaCounts/deltaTime);
     errorSpeed = expectedSpeed - actSpeed;
@@ -140,7 +139,7 @@ float DriveTrain::PIDAdjustment(int motor, float expectedSpeed) {
     iTerm = errorSum * iConst;
     dTerm = (errorSpeed - prevError) * dConst;
     prevError = errorSpeed;
-    prevTime = time(NULL);
+    prevTime = TimeNow();
     motorZeroCounts = motorZeroEncoder.Counts();
     motorOneCounts = motorOneEncoder.Counts();
     motorTwoCounts = motorTwoEncoder.Counts();
