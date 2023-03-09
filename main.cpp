@@ -10,7 +10,8 @@ using namespace std;
 #define RED 0
 #define BLUE 1
 #define OFF 2
-#define CPI 40.5
+#define CPI 40.386 //actual counts per inch of each wheel
+#define MAXIPS 30.7
 
 struct Vector2 {
     float x, y;
@@ -55,7 +56,7 @@ class DriveTrain {
         DigitalEncoder motorZeroEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder motorOneEncoder = DigitalEncoder(FEHIO::P0_1);
         DigitalEncoder motorTwoEncoder = DigitalEncoder(FEHIO::P0_2);
-        float prevTime, prevError;
+        float prevTime, prevError, firstTimeInMove;
         float pConst, iConst, dConst;
         float errorSum;
         int motorZeroCounts, motorOneCounts, motorTwoCounts;
@@ -73,7 +74,7 @@ class DriveTrain {
         void DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed);
         void StopDriving();
         void Initialize();
-        float PIDAdjustment(int motor, float expectedSpeed);
+        float PIDAdjustment(float expectedSpeed, int motor);
         void ResetPID();
         int GetColor();
 
@@ -82,14 +83,15 @@ class DriveTrain {
 // Default Constructor
 DriveTrain::DriveTrain() {
     prevTime = 0;
+    firstTimeInMove = 0;
     prevError = 0;
     motorZeroCounts = 0;
     motorOneCounts = 0;
     motorTwoCounts = 0;
     errorSum = 0;
-    pConst = 0.75;
-    iConst = 0.1;
-    dConst = 0.25;
+    pConst = 0.5;
+    iConst = 0.05;
+    dConst = 0.2;
 }
 
 // Function to stop all the motors
@@ -102,6 +104,7 @@ void DriveTrain::StopDriving() {
 // function to reset all the PID variables
 void DriveTrain::ResetPID() {
     prevTime = TimeNow();
+    firstTimeInMove = TimeNow();
     prevError = 0;
     motorZeroCounts = 0;
     motorOneCounts = 0;
@@ -115,7 +118,7 @@ void DriveTrain::ResetPID() {
 
 //calculate PID terms
 
-float DriveTrain::PIDAdjustment(int motor, float expectedSpeed) {
+float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
     int deltaCounts;
     float deltaTime;
     float actSpeed;
@@ -144,10 +147,16 @@ float DriveTrain::PIDAdjustment(int motor, float expectedSpeed) {
     motorOneCounts = motorOneEncoder.Counts();
     motorTwoCounts = motorTwoEncoder.Counts();
 
-    LCD.WriteAt(actSpeed,0,60);
-    LCD.WriteAt(errorSpeed,0,80);
-    LCD.WriteAt(deltaTime, 0, 100);
-    LCD.WriteAt(deltaCounts, 0, 140);
+    LCD.WriteAt("actSpeed",0,60);
+    LCD.WriteAt(actSpeed,200,60);
+    LCD.WriteAt("errorSpeed",0,80);
+    LCD.WriteAt(errorSpeed,200,80);
+    LCD.WriteAt("elapsedTime", 0, 100);
+    LCD.WriteAt(prevTime - firstTimeInMove, 200, 100);
+    //LCD.WriteAt("deltaTime", 0, 120);
+    //LCD.WriteAt(deltaTime, 200, 120);
+    LCD.WriteAt("P", 0, 140);
+    LCD.WriteAt(pTerm, 200, 140);
 
     return expectedSpeed + pTerm + iTerm + dTerm;
 }
@@ -158,12 +167,21 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
         ResetPID();
         LCD.Clear();
         while(((motorOneEncoder.Counts() + motorTwoEncoder.Counts())/2) < (35.07 * distance)) {
-            motor1.SetPercent(-PIDAdjustment(speed, 1));
-            motor2.SetPercent(PIDAdjustment(speed, 2));
-            LCD.WriteAt(motorZeroEncoder.Counts(), 0, 0);
-            LCD.WriteAt(motorOneEncoder.Counts(), 0, 20);
-            LCD.WriteAt(motorTwoEncoder.Counts(), 0, 40);
-            Sleep(0.005);
+            float motor1PID = -PIDAdjustment(speed, 1);
+            float motor2PID = PIDAdjustment(speed, 2);
+            motor1.SetPercent((motor1PID/MAXIPS)*100);
+            motor2.SetPercent((motor2PID/MAXIPS)*100);
+            LCD.WriteAt("zeroCounts", 0, 0);
+            LCD.WriteAt(motorZeroEncoder.Counts(), 200, 0);
+            LCD.WriteAt("oneCounts", 0, 20);
+            LCD.WriteAt(motorOneEncoder.Counts(), 200, 20);
+            LCD.WriteAt("twoCounts", 0, 40);
+            LCD.WriteAt(motorTwoEncoder.Counts(), 200, 40);
+            LCD.WriteAt("PID 1", 0, 180);
+            LCD.WriteAt(motor1PID, 200, 180);
+            LCD.WriteAt("PID 2", 0, 200);
+            LCD.WriteAt(motor2PID, 200, 200);
+            Sleep(0.05);
         }
         StopDriving();
     } else if (forwardMotor == 1) { // Motor 1
@@ -317,7 +335,7 @@ Robot::Robot() {
 }*/
 
 void Robot::EncoderTest() {
-    dt.DriveForward(10, 0, 25);
+    dt.DriveForward(7, 0, 20);
 }
 
 int main(void) {
