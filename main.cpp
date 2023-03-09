@@ -12,6 +12,8 @@ using namespace std;
 #define OFF 2
 #define CPI 40.386 //actual counts per inch of each wheel
 #define MAXIPS 30.7
+#define FORWARD 1
+#define REVERSE -1
 
 struct Vector2 {
     float x, y;
@@ -67,7 +69,7 @@ class DriveTrain {
     public:
         // Delcaration for all the functions below
         DriveTrain();
-        void DriveForward(float speed, int forwardMotor, int distance);
+        void DriveForward(float speed, int forwardMotor, int distance, int direction);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
@@ -153,8 +155,6 @@ float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
     LCD.WriteAt(errorSpeed,200,80);
     LCD.WriteAt("elapsedTime", 0, 100);
     LCD.WriteAt(prevTime - firstTimeInMove, 200, 100);
-    //LCD.WriteAt("deltaTime", 0, 120);
-    //LCD.WriteAt(deltaTime, 200, 120);
     LCD.WriteAt("P", 0, 140);
     LCD.WriteAt(pTerm, 200, 140);
 
@@ -162,14 +162,23 @@ float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
 }
 
 // Drive forward in the direction of the given motor
-void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
+void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int direction) {
+    ResetPID();
+    LCD.Clear();
     if (forwardMotor == 0) { // Motor 0
-        ResetPID();
-        LCD.Clear();
         while(((motorOneEncoder.Counts() + motorTwoEncoder.Counts())/2) < (35.07 * distance)) {
-            float motor1PID = -PIDAdjustment(speed, 1);
-            float motor2PID = PIDAdjustment(speed, 2);
+            float motor1PID = -PIDAdjustment(speed, 1) * direction;
+            float motor2PID = PIDAdjustment(speed, 2) * direction;
             motor1.SetPercent((motor1PID/MAXIPS)*100);
+            motor2.SetPercent((motor2PID/MAXIPS)*100);
+            Sleep(0.05);
+        }
+        
+    } else if (forwardMotor == 1) { // Motor 1
+        while(((motorZeroEncoder.Counts() + motorTwoEncoder.Counts())/2) < (35.07 * distance)) {
+            float motor0PID = PIDAdjustment(speed, 0) * direction;
+            float motor2PID = -PIDAdjustment(speed, 2) * direction;
+            motor0.SetPercent((motor0PID/MAXIPS)*100);
             motor2.SetPercent((motor2PID/MAXIPS)*100);
             LCD.WriteAt("zeroCounts", 0, 0);
             LCD.WriteAt(motorZeroEncoder.Counts(), 200, 0);
@@ -177,21 +186,18 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance) {
             LCD.WriteAt(motorOneEncoder.Counts(), 200, 20);
             LCD.WriteAt("twoCounts", 0, 40);
             LCD.WriteAt(motorTwoEncoder.Counts(), 200, 40);
-            LCD.WriteAt("PID 1", 0, 180);
-            LCD.WriteAt(motor1PID, 200, 180);
-            LCD.WriteAt("PID 2", 0, 200);
-            LCD.WriteAt(motor2PID, 200, 200);
             Sleep(0.05);
         }
-        StopDriving();
-    } else if (forwardMotor == 1) { // Motor 1
-        motor0.SetPercent(speed);
-        motor2.SetPercent(-speed);
     } else {  // Motor 2
-        motor0.SetPercent(-speed);
-        motor1.SetPercent(speed);
+        while(((motorZeroEncoder.Counts() + motorOneEncoder.Counts())/2) < (35.07 * distance)) {
+            float motor0PID = -PIDAdjustment(speed, 0) * direction;
+            float motor1PID = PIDAdjustment(speed, 1) * direction;
+            motor0.SetPercent((motor0PID/MAXIPS)*100);
+            motor1.SetPercent((motor1PID/MAXIPS)*100);
+            Sleep(0.05);
+        }
     }
-    
+    StopDriving();
     
 }
 
@@ -263,7 +269,7 @@ class Robot {
     public:
         Robot();
         void Checkpoint1();
-        void EncoderTest();
+        void PIDDebug();
 };
 
 // Default Constructor
@@ -272,41 +278,35 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
-/*void Robot::Checkpoint1() {
+void Robot::Checkpoint1() {
     // Initialize on the light
     dt.Initialize();
     // Drive of launchpad
-    dt.DriveForward(30, 0);
-    Sleep(0.7);
-    dt.StopDriving();
+    dt.DriveForward(7, 0, 4, FORWARD);
     // Rotate to face ramp
     dt.DriveRotate(30);
     Sleep(0.4);
     dt.StopDriving();
     // Drive up ramp
-    dt.DriveForward(50, 0);
-    Sleep(2.7);
-    dt.StopDriving();
+    dt.DriveForward(10, 0, 32, FORWARD);
     // Rotate to face wall
     dt.DriveRotate(-30);
     Sleep(0.4);
     dt.StopDriving();
     // Align with wall
-    dt.DriveForward(-30, 1);
-    Sleep(2.0);
-    dt.StopDriving();
-    // Drive out to face kiosk
-    dt.DriveForward(30, 1);
-    Sleep(2.0);
-    dt.StopDriving();
+    dt.DriveForward(12, 1, 5, REVERSE);
+    // Drive out to hit opposite wall
+    Sleep(5.0);
+    dt.DriveForward(10, 1, 32, FORWARD);
+    // Drive to face kiosk
+    dt.DriveForward(7, 1, 6, REVERSE);
     // Rotate to orient towards kiosk
-    dt.DriveRotate(-30);
-    Sleep(0.4);
+    dt.DriveRotate(30);
+    Sleep(0.3);
     dt.StopDriving();
     // Drive into kiosk
-    dt.DriveForward(-40, 2);
-    Sleep(2.5);
-    dt.StopDriving();
+    dt.DriveForward(7, 0, 10, FORWARD);
+    /*
     // Drive off kiosk
     dt.DriveForward(40, 2);
     Sleep(2.0);
@@ -330,21 +330,21 @@ Robot::Robot() {
     // Drive down ramp
     dt.DriveForward(30, 0);
     Sleep(3.5);
-    dt.StopDriving();
+    dt.StopDriving();*/
 
-}*/
-
-void Robot::EncoderTest() {
-    dt.DriveForward(7, 0, 20);
 }
+
+void Robot::PIDDebug() {
+    dt.DriveForward(7, 2, 32, FORWARD);
+}
+
 
 int main(void) {
 
     // declare robot class
     Robot robot;
 
-    robot.EncoderTest();
-
-    
+    robot.Checkpoint1();
+        
     return 0;
 }
