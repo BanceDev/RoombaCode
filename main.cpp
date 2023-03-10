@@ -14,6 +14,8 @@ using namespace std;
 #define MAXIPS 30.7
 #define FORWARD 1
 #define REVERSE -1
+#define CLRCHCKYES 1
+#define CLRCHCKNO 0
 
 struct Vector2 {
     float x, y;
@@ -67,9 +69,11 @@ class DriveTrain {
                 
 
     public:
+        float minCdSValue;
+
         // Delcaration for all the functions below
         DriveTrain();
-        void DriveForward(float speed, int forwardMotor, int distance, int direction);
+        void DriveForward(float speed, int forwardMotor, int distance, int direction, int checkColorYesNo);
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
@@ -78,7 +82,8 @@ class DriveTrain {
         void Initialize();
         float PIDAdjustment(float expectedSpeed, int motor);
         void ResetPID();
-        int GetColor();
+        int GetStartColor();
+        void checkMinCdSValue();
 
 };
 
@@ -91,9 +96,10 @@ DriveTrain::DriveTrain() {
     motorOneCounts = 0;
     motorTwoCounts = 0;
     errorSum = 0;
-    pConst = 0.5;
+    pConst = 0.45;
     iConst = 0.05;
     dConst = 0.2;
+    minCdSValue = 3.3;
 }
 
 // Function to stop all the motors
@@ -115,6 +121,7 @@ void DriveTrain::ResetPID() {
     motorZeroEncoder.ResetCounts();
     motorOneEncoder.ResetCounts();
     motorTwoEncoder.ResetCounts();
+    minCdSValue = CdS.Value();
     Sleep(0.05);
 }
 
@@ -158,11 +165,13 @@ float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
     LCD.WriteAt("P", 0, 140);
     LCD.WriteAt(pTerm, 200, 140);
 
+    LCD.WriteAt(minCdSValue, 200, 20);
+
     return expectedSpeed + pTerm + iTerm + dTerm;
 }
 
 // Drive forward in the direction of the given motor
-void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int direction) {
+void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int direction, int checkColorYesNo) {
     ResetPID();
     LCD.Clear();
     if (forwardMotor == 0) { // Motor 0
@@ -171,6 +180,9 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int d
             float motor2PID = PIDAdjustment(speed, 2) * direction;
             motor1.SetPercent((motor1PID/MAXIPS)*100);
             motor2.SetPercent((motor2PID/MAXIPS)*100);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
             Sleep(0.05);
         }
         
@@ -186,6 +198,9 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int d
             LCD.WriteAt(motorOneEncoder.Counts(), 200, 20);
             LCD.WriteAt("twoCounts", 0, 40);
             LCD.WriteAt(motorTwoEncoder.Counts(), 200, 40);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
             Sleep(0.05);
         }
     } else {  // Motor 2
@@ -194,6 +209,9 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int d
             float motor1PID = PIDAdjustment(speed, 1) * direction;
             motor0.SetPercent((motor0PID/MAXIPS)*100);
             motor1.SetPercent((motor1PID/MAXIPS)*100);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
             Sleep(0.05);
         }
     }
@@ -243,21 +261,26 @@ void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed) 
 
 
 // Returns the color that the CdS Cell is seeing
-int DriveTrain::GetColor() {
+int DriveTrain::GetStartColor() {
     if (CdS.Value() < 0.3) {
         return RED;
     } else if (0.3 < CdS.Value() && CdS.Value() < 1.5) {
         return BLUE;
-    } 
+    }
 
     return OFF;
 }
 
-// initializes the drive train when the light turns on
-void DriveTrain::Initialize() {
-    while (GetColor() == OFF || GetColor() == BLUE) {}
+void DriveTrain::checkMinCdSValue() {
+    if (CdS.Value() < minCdSValue) {
+        minCdSValue = CdS.Value();
+    }
 }
 
+// initializes the drive train when the light turns on
+void DriveTrain::Initialize() {
+    while (GetStartColor() == OFF || GetStartColor() == BLUE) {}
+}
 
 
 // Class for the Robot
@@ -282,30 +305,112 @@ void Robot::Checkpoint1() {
     // Initialize on the light
     dt.Initialize();
     // Drive of launchpad
-    dt.DriveForward(7, 0, 4, FORWARD);
+    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
     // Rotate to face ramp
     dt.DriveRotate(30);
     Sleep(0.4);
     dt.StopDriving();
     // Drive up ramp
-    dt.DriveForward(10, 0, 32, FORWARD);
+    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
     // Rotate to face wall
     dt.DriveRotate(-30);
     Sleep(0.4);
     dt.StopDriving();
     // Align with wall
-    dt.DriveForward(12, 1, 5, REVERSE);
-    // Drive out to hit opposite wall
-    Sleep(5.0);
-    dt.DriveForward(10, 1, 32, FORWARD);
-    // Drive to face kiosk
-    dt.DriveForward(7, 1, 6, REVERSE);
-    // Rotate to orient towards kiosk
-    dt.DriveRotate(30);
-    Sleep(0.3);
+    dt.DriveForward(7.25, 1, 10, REVERSE, CLRCHCKNO);
+
+
+    
+    // Drive out some distance
+    dt.DriveForward(7, 1, 11.5, FORWARD, CLRCHCKNO);
+    
+    // Drive to light
+    dt.DriveForward(7, 2, 19, REVERSE, CLRCHCKYES);
+
+    LCD.Clear();
+
+    int thisisavar = -1;
+
+    if (dt.minCdSValue < 0.3) { // RED
+        thisisavar = 200;
+        LCD.SetBackgroundColor(0xFF0000);
+        LCD.Clear();
+    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
+        thisisavar = 100;
+        LCD.SetBackgroundColor(0x0000FF);
+        LCD.Clear();
+    }
+    
+    // back away from light
+    dt.DriveForward(7, 2, 4.5, FORWARD, CLRCHCKNO);
+
+    //move to the right button
+    if (thisisavar == 200) { // RED
+        dt.DriveForward(7, 1, 8, REVERSE, CLRCHCKNO);
+    } else { // BLUE
+        dt.DriveForward(7, 1, 1, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    }
+
+    //turn towards sides to hit the button
+    dt.DriveRotate(-30);
+    Sleep(0.325);
     dt.StopDriving();
-    // Drive into kiosk
-    dt.DriveForward(7, 0, 10, FORWARD);
+    
+    //back up from light
+    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
+
+
+    /*
+    // Drive out to hit opposite wall
+    dt.DriveForward(7, 1, 31, FORWARD, CLRCHCKNO);
+    // back up a bit to be aligned with light
+    dt.DriveForward(6.5, 1, 8.5, REVERSE, CLRCHCKNO);
+    // Rotate to orient towards light
+    dt.DriveRotate(30);
+    Sleep(0.26);
+    dt.StopDriving();
+    // Drive into light
+    dt.DriveForward(6, 0, 18, FORWARD, CLRCHCKYES);
+
+    LCD.Clear();
+
+    int thisisavar = -1;
+
+    if (dt.minCdSValue < 0.3) { // RED
+        thisisavar = 200;
+        LCD.SetBackgroundColor(0xFF0000);
+        LCD.Clear();
+    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
+        thisisavar = 100;
+        LCD.SetBackgroundColor(0x0000FF);
+        LCD.Clear();
+    }
+
+    //back up from light
+    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+
+    //turn towards kiosk
+    dt.DriveRotate(-30);
+    Sleep(0.275);
+    dt.StopDriving();
+
+    //move to the right button
+    if (thisisavar == 200) { // RED
+        dt.DriveForward(7, 1, 10, REVERSE, CLRCHCKNO);
+    } else { // BLUE
+        dt.DriveForward(7, 1, 5, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    }
+
+    //turn towards sides to hit the button
+    dt.DriveRotate(-30);
+    Sleep(0.275);
+    dt.StopDriving();
+    
+    //back up from light
+    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);*/
+
     /*
     // Drive off kiosk
     dt.DriveForward(40, 2);
@@ -335,7 +440,7 @@ void Robot::Checkpoint1() {
 }
 
 void Robot::PIDDebug() {
-    dt.DriveForward(7, 2, 32, FORWARD);
+    //dt.DriveForward(7, 2, 32, FORWARD);
 }
 
 
