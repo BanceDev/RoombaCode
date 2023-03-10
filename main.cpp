@@ -346,7 +346,7 @@ void Robot::Checkpoint1() {
 
     //move to the right button
     if (thisisavar == 200) { // RED
-        dt.DriveForward(7, 1, 8, REVERSE, CLRCHCKNO);
+        dt.DriveForward(7, 1, 11, REVERSE, CLRCHCKNO);
     } else { // BLUE
         dt.DriveForward(7, 1, 1, REVERSE, CLRCHCKNO);
         LCD.Clear();
@@ -358,7 +358,7 @@ void Robot::Checkpoint1() {
     dt.StopDriving();
     
     //back up from light
-    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
+    dt.DriveForward(12.5, 2, 10, REVERSE, CLRCHCKNO);
 
 
     /*
