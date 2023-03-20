@@ -268,7 +268,7 @@ class Robot {
         DriveTrain dt;
     public:
         Robot();
-        void Checkpoint1();
+        void Checkpoint3();
         void PIDDebug();
 };
 
@@ -278,60 +278,24 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
-void Robot::Checkpoint1() {
-    // Initialize on the light
-    dt.Initialize();
-    // Drive of launchpad
-    dt.DriveForward(7, 0, 4, FORWARD);
-    // Rotate to face ramp
-    dt.DriveRotate(30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Drive up ramp
-    dt.DriveForward(10, 0, 32, FORWARD);
-    // Rotate to face wall
-    dt.DriveRotate(-30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Align with wall
-    dt.DriveForward(12, 1, 5, REVERSE);
-    // Drive out to hit opposite wall
-    Sleep(5.0);
-    dt.DriveForward(10, 1, 32, FORWARD);
-    // Drive to face kiosk
-    dt.DriveForward(7, 1, 6, REVERSE);
-    // Rotate to orient towards kiosk
-    dt.DriveRotate(30);
-    Sleep(0.3);
-    dt.StopDriving();
-    // Drive into kiosk
-    dt.DriveForward(7, 0, 10, FORWARD);
-    /*
-    // Drive off kiosk
-    dt.DriveForward(40, 2);
-    Sleep(2.0);
-    dt.StopDriving();
-    // Rotate to face wall
-    dt.DriveRotate(-30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Drive into wall
-    dt.DriveForward(40,0);
-    Sleep(2.0);
-    dt.StopDriving();
-    // Pull off wall
-    dt.DriveForward(-40, 0);
-    Sleep(0.3);
-    dt.StopDriving();
-    // Rotate to face ramp
-    dt.DriveRotate(-30);
-    Sleep(0.9);
-    dt.StopDriving();
-    // Drive down ramp
-    dt.DriveForward(30, 0);
-    Sleep(3.5);
-    dt.StopDriving();*/
-
+void Robot::Checkpoint3() {
+     
+    // Get correct lever from the RPS
+    int correctLever = RPS.GetCorrectLever();
+     
+    // Check which lever to flip and perform some action
+    if(correctLever == 0)
+    {
+        // Perform actions to flip left lever
+    } 
+    else if(correctLever == 1)
+    {
+        // Perform actions to flip middle lever
+    }
+    else if(correctLever == 2)
+    {
+       // Perform actions to flip right lever
+    }
 }
 
 void Robot::PIDDebug() {
@@ -344,7 +308,9 @@ int main(void) {
     // declare robot class
     Robot robot;
 
-    robot.Checkpoint1();
+    RPS.InitializeTouchMenu();
+
+    robot.Checkpoint3();
         
     return 0;
 }

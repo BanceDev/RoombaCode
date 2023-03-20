@@ -46,7 +46,7 @@ else
        		$(GITBINARY) pull ; \
        		cd .. ; \
 		else \
-       		$(GITBINARY) clone https://github.com/BanceDev/fehproteusfirmware.git ; \
+       		$(GITBINARY) clone https://github.com/BanceDev/fehproteusfirmware.git; \
 		fi \
 	fi \
 
