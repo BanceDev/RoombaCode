@@ -1,11 +1,3 @@
-/***********************
- * FEH Roomba Code     *
- * Lance Borden        *
- * Aditya Chittari     *
- * John Hinton         *
- * Daniel Schneider    *
- ***********************/
-
 #include <FEHUtility.h>
 #include <FEHMotor.h>
 #include <FEHLCD.h>
