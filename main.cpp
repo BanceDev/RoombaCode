@@ -292,6 +292,7 @@ class Robot {
     public:
         Robot();
         void Checkpoint3();
+        void Checkpoint1();
         void PIDDebug();
 };
 
@@ -301,23 +302,164 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
+void Robot::Checkpoint1() {
+    // Initialize on the light
+    dt.Initialize();
+    // Drive of launchpad
+    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
+    // Rotate to face ramp
+    dt.DriveRotate(30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive up ramp
+    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
+    // Rotate to face wall
+    dt.DriveRotate(-30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Align with wall
+    dt.DriveForward(7.25, 1, 10, REVERSE, CLRCHCKNO);
+
+
+    
+    // Drive out some distance
+    dt.DriveForward(7, 1, 11.5, FORWARD, CLRCHCKNO);
+    
+    // Drive to light
+    dt.DriveForward(7, 2, 19, REVERSE, CLRCHCKYES);
+
+    LCD.Clear();
+
+    int thisisavar = -1;
+
+    if (dt.minCdSValue < 0.3) { // RED
+        thisisavar = 200;
+        LCD.SetBackgroundColor(0xFF0000);
+        LCD.Clear();
+    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
+        thisisavar = 100;
+        LCD.SetBackgroundColor(0x0000FF);
+        LCD.Clear();
+    }
+    
+    // back away from light
+    dt.DriveForward(7, 2, 4.5, FORWARD, CLRCHCKNO);
+
+    //move to the right button
+    if (thisisavar == 200) { // RED
+        dt.DriveForward(7, 1, 8, REVERSE, CLRCHCKNO);
+    } else { // BLUE
+        dt.DriveForward(7, 1, 1, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    }
+
+    //turn towards sides to hit the button
+    dt.DriveRotate(-30);
+    Sleep(0.325);
+    dt.StopDriving();
+    
+    //back up from light
+    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
+
+
+    /*
+    // Drive out to hit opposite wall
+    dt.DriveForward(7, 1, 31, FORWARD, CLRCHCKNO);
+    // back up a bit to be aligned with light
+    dt.DriveForward(6.5, 1, 8.5, REVERSE, CLRCHCKNO);
+    // Rotate to orient towards light
+    dt.DriveRotate(30);
+    Sleep(0.26);
+    dt.StopDriving();
+    // Drive into light
+    dt.DriveForward(6, 0, 18, FORWARD, CLRCHCKYES);
+    LCD.Clear();
+    int thisisavar = -1;
+    if (dt.minCdSValue < 0.3) { // RED
+        thisisavar = 200;
+        LCD.SetBackgroundColor(0xFF0000);
+        LCD.Clear();
+    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
+        thisisavar = 100;
+        LCD.SetBackgroundColor(0x0000FF);
+        LCD.Clear();
+    }
+    //back up from light
+    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+    //turn towards kiosk
+    dt.DriveRotate(-30);
+    Sleep(0.275);
+    dt.StopDriving();
+    //move to the right button
+    if (thisisavar == 200) { // RED
+        dt.DriveForward(7, 1, 10, REVERSE, CLRCHCKNO);
+    } else { // BLUE
+        dt.DriveForward(7, 1, 5, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    }
+    //turn towards sides to hit the button
+    dt.DriveRotate(-30);
+    Sleep(0.275);
+    dt.StopDriving();
+    
+    //back up from light
+    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);*/
+
+    /*
+    // Drive off kiosk
+    dt.DriveForward(40, 2);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Rotate to face wall
+    dt.DriveRotate(-30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive into wall
+    dt.DriveForward(40,0);
+    Sleep(2.0);
+    dt.StopDriving();
+    // Pull off wall
+    dt.DriveForward(-40, 0);
+    Sleep(0.3);
+    dt.StopDriving();
+    // Rotate to face ramp
+    dt.DriveRotate(-30);
+    Sleep(0.9);
+    dt.StopDriving();
+    // Drive down ramp
+    dt.DriveForward(30, 0);
+    Sleep(3.5);
+    dt.StopDriving();*/
+
+}
+
+// Routine for the first checkpoint
 void Robot::Checkpoint3() {
      
     // Get correct lever from the RPS
     int correctLever = RPS.GetCorrectLever();
+
+    dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
+    dt.DriveRotate(-30);
+    Sleep(1.2);
+    dt.StopDriving();
+    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
      
     // Check which lever to flip and perform some action
     if(correctLever == 0)
     {
         // Perform actions to flip left lever
+        dt.DriveForward(7, 2, 19, FORWARD, CLRCHCKNO);
     } 
     else if(correctLever == 1)
     {
         // Perform actions to flip middle lever
+        dt.DriveForward(7, 2, 22, FORWARD, CLRCHCKNO);
     }
     else if(correctLever == 2)
     {
        // Perform actions to flip right lever
+       dt.DriveForward(7, 2, 26, FORWARD, CLRCHCKNO);
     }
 }
 
