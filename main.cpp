@@ -17,33 +17,6 @@ using namespace std;
 #define CLRCHCKYES 1
 #define CLRCHCKNO 0
 
-struct Vector2 {
-    float x, y;
-
-    // a function to subtract one vector from another
-    // used to get vector line between two points
-    struct Vector2 Subtract(struct Vector2 other) {
-        struct Vector2 result;
-        result.x = other.x - x;
-        result.y = other.y - y;
-        return result;
-    }
-    
-    /* this function normalizes the vector
-    this makes it's length equal to 1, useful for maintaining a constant velocity*/
-    void Normalize()
-    {
-        float magnitude = sqrt(pow(x,2) + pow(y,2));
-        x = x / magnitude;
-        y = y / magnitude;
-    }
-    
-    // this function returns the magnitude of the vector
-    float Magnitude() {
-        return sqrt(pow(x,2) + pow(y,2));
-    }
-    
-};
 
 // class for the Drive train and its functions
 class DriveTrain {
@@ -77,7 +50,6 @@ class DriveTrain {
         void DriveHorizontal(float speed);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
-        void DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed);
         void StopDriving();
         void Initialize();
         float PIDAdjustment(float expectedSpeed, int motor);
@@ -246,17 +218,6 @@ void DriveTrain::DriveCombined(float angle, int speed) {
     motor0.SetPercent(motorZeroSpeed);
     motor1.SetPercent(motorOneSpeed);
     motor2.SetPercent(motorTwoSpeed);
-}
-
-// Use the Drive Combined function to drive to a point
-// For this to work the robot needs to be oriented with motor zero at the top
-// TODO: Make this field centric
-void DriveTrain::DriveToPoint(Vector2 currentPos, Vector2 targetPos, int speed) {
-    // get the vector between the two points
-    Vector2 direction = targetPos.Subtract(currentPos);
-    direction.Normalize();
-    float angle = atan(direction.y/direction.x);
-    DriveCombined(angle, speed);
 }
 
 
