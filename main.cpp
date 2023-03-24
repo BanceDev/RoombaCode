@@ -5,6 +5,7 @@
 #include <FEHRPS.h>
 #include <cmath>
 #include <algorithm>
+#include <FEHServo.h>
 using namespace std;
 
 #define RED 0
@@ -33,6 +34,7 @@ class DriveTrain {
         DigitalEncoder motorZeroEncoder = DigitalEncoder(FEHIO::P0_0);
         DigitalEncoder motorOneEncoder = DigitalEncoder(FEHIO::P0_1);
         DigitalEncoder motorTwoEncoder = DigitalEncoder(FEHIO::P0_2);
+
         float prevTime, prevError, firstTimeInMove;
         float pConst, iConst, dConst;
         float errorSum;
@@ -56,6 +58,8 @@ class DriveTrain {
         void ResetPID();
         int GetStartColor();
         void checkMinCdSValue();
+        
+        FEHServo armServo = FEHServo(FEHServo::Servo7);
 
 };
 
@@ -255,6 +259,7 @@ class Robot {
         void Checkpoint3();
         void Checkpoint1();
         void PIDDebug();
+        void FlipLever();
 };
 
 // Default Constructor
@@ -396,7 +401,15 @@ void Robot::Checkpoint1() {
 
 // Routine for the first checkpoint
 void Robot::Checkpoint3() {
+    FlipLever();
+    
+
+    
+    //dt.armServo.TouchCalibrate();
+
+    // position 1, wait 2 seconds, position 2, 
      
+    /*
     // Get correct lever from the RPS
     int correctLever = RPS.GetCorrectLever();
 
@@ -411,21 +424,40 @@ void Robot::Checkpoint3() {
     {
         // Perform actions to flip left lever
         dt.DriveForward(7, 2, 19, FORWARD, CLRCHCKNO);
+        FlipLever();
     } 
     else if(correctLever == 1)
     {
         // Perform actions to flip middle lever
         dt.DriveForward(7, 2, 22, FORWARD, CLRCHCKNO);
+        FlipLever();
     }
     else if(correctLever == 2)
     {
        // Perform actions to flip right lever
        dt.DriveForward(7, 2, 26, FORWARD, CLRCHCKNO);
+       FlipLever();
     }
+    */
 }
 
 void Robot::PIDDebug() {
-    //dt.DriveForward(7, 2, 32, FORWARD);
+    //dt.DriveForward(7, 0, 7, FORWARD);
+}
+
+void Robot::FlipLever() {
+
+FEHServo armServo(FEHServo::Servo7);
+    Sleep(1.0);
+    armServo.SetDegree(75);
+    Sleep(0.6);
+    dt.DriveForward(7, 1, 4, FORWARD, CLRCHCKNO);
+    armServo.SetDegree(85);
+    Sleep(4.0);
+    dt.DriveForward(7, 1, 4, REVERSE, CLRCHCKNO);
+    Sleep(0.6);
+    armServo.SetDegree(35);
+    Sleep(1.0);
 }
 
 
@@ -434,7 +466,7 @@ int main(void) {
     // declare robot class
     Robot robot;
 
-    RPS.InitializeTouchMenu();
+    // RPS.InitializeTouchMenu();
 
     robot.Checkpoint3();
         
