@@ -49,7 +49,7 @@ class DriveTrain {
         // Delcaration for all the functions below
         DriveTrain();
         void DriveForward(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo);
-        void DriveHorizontal(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo);
+        void DriveStrafe(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
         void StopDriving();
@@ -198,7 +198,7 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, float distance, int
 // Drive Horizontol
 // Currently only parallel to motor 0
 // TODO: Update it to be like DriveForward
-void DriveTrain::DriveHorizontal(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo) {
+void DriveTrain::DriveStrafe(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo) {
     ResetPID();
     LCD.Clear();
     if (forwardMotor == 0) { // Motor 0
@@ -305,6 +305,7 @@ class Robot {
         void Checkpoint1();
         void FlipLever();
         void StrafeTest();
+        void Checkpoint4();
 };
 
 // Default Constructor
@@ -375,8 +376,8 @@ void Robot::Checkpoint1() {
 }
 
 void Robot::StrafeTest() {
-    dt.DriveHorizontal(7, 0, 10, FORWARD, CLRCHCKNO);
-    dt.DriveHorizontal(7, 0, 10, REVERSE, CLRCHCKNO);
+    dt.DriveStrafe(7, 0, 10, FORWARD, CLRCHCKNO);
+    dt.DriveStrafe(7, 0, 10, REVERSE, CLRCHCKNO);
 }
 
 // Routine for the first checkpoint
@@ -429,7 +430,6 @@ void Robot::Checkpoint3() {
 }
 
 void Robot::FlipLever() {
-
     Sleep(1.0);
     armServo.SetDegree(80);
     Sleep(0.6);
@@ -442,15 +442,27 @@ void Robot::FlipLever() {
     Sleep(1.0);
 }
 
+void Robot::Checkpoint4() {
+    armServo.SetDegree(90);
+    Sleep(0.5);
+    dt.DriveStrafe(7, 1, 2, FORWARD, CLRCHCKNO);
+    armServo.SetDegree(10);
+    Sleep(0.5);
+    dt.DriveStrafe(7, 1, 6, FORWARD, CLRCHCKNO);
+    armServo.SetDegree(45);
+    dt.DriveStrafe(7, 1, 8, REVERSE, CLRCHCKNO);
+
+}
+
 
 int main(void) {
 
     // declare robot class
     Robot robot;
 
-    RPS.InitializeTouchMenu();
+    //RPS.InitializeTouchMenu();
 
-    robot.Checkpoint3();
+    robot.Checkpoint4();
         
     return 0;
 }
