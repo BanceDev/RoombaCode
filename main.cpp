@@ -48,8 +48,8 @@ class DriveTrain {
 
         // Delcaration for all the functions below
         DriveTrain();
-        void DriveForward(float speed, int forwardMotor, int distance, int direction, int checkColorYesNo);
-        void DriveHorizontal(float speed);
+        void DriveForward(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo);
+        void DriveHorizontal(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo);
         void DriveRotate(float speed);
         void DriveCombined(float angle, int speed);
         void StopDriving();
@@ -147,7 +147,7 @@ float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
 }
 
 // Drive forward in the direction of the given motor
-void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int direction, int checkColorYesNo) {
+void DriveTrain::DriveForward(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo) {
     ResetPID();
     LCD.Clear();
     if (forwardMotor == 0) { // Motor 0
@@ -198,10 +198,54 @@ void DriveTrain::DriveForward(float speed, int forwardMotor, int distance, int d
 // Drive Horizontol
 // Currently only parallel to motor 0
 // TODO: Update it to be like DriveForward
-void DriveTrain::DriveHorizontal(float speed) {
-    motor2.SetPercent(speed/2);
-    motor1.SetPercent(speed/2);
-    motor0.SetPercent(-speed);
+void DriveTrain::DriveHorizontal(float speed, int forwardMotor, float distance, int direction, int checkColorYesNo) {
+    ResetPID();
+    LCD.Clear();
+    if (forwardMotor == 0) { // Motor 0
+        while(motorZeroEncoder.Counts() < (CPI * distance)) {
+            float motor0PID = -PIDAdjustment(speed, 0) * direction;
+            float motor1PID = PIDAdjustment(speed/2, 1) * direction;
+            float motor2PID = PIDAdjustment(speed/2, 2) * direction;
+
+            motor0.SetPercent((motor0PID/MAXIPS)*100);
+            motor1.SetPercent((motor1PID/MAXIPS)*100);
+            motor2.SetPercent((motor2PID/MAXIPS)*100);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
+            Sleep(0.05);
+        }
+        
+    } else if (forwardMotor == 1) { // Motor 1
+        while(motorOneEncoder.Counts() < (CPI * distance)) {
+            float motor0PID = PIDAdjustment(speed/2, 0) * direction;
+            float motor1PID = -PIDAdjustment(speed, 1) * direction;
+            float motor2PID = PIDAdjustment(speed/2, 2) * direction;
+
+            motor0.SetPercent((motor0PID/MAXIPS)*100);
+            motor1.SetPercent((motor1PID/MAXIPS)*100);
+            motor2.SetPercent((motor2PID/MAXIPS)*100);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
+            Sleep(0.05);
+        }
+    } else {  // Motor 2
+        while(motorTwoEncoder.Counts() < (CPI * distance)) {
+            float motor0PID = PIDAdjustment(speed/2, 0) * direction;
+            float motor1PID = PIDAdjustment(speed/2, 1) * direction;
+            float motor2PID = -PIDAdjustment(speed, 2) * direction;
+
+            motor0.SetPercent((motor0PID/MAXIPS)*100);
+            motor1.SetPercent((motor1PID/MAXIPS)*100);
+            motor2.SetPercent((motor2PID/MAXIPS)*100);
+            if (checkColorYesNo == 1) {
+                checkMinCdSValue();
+            }
+            Sleep(0.05);
+        }
+    }
+    StopDriving();
     
 }
 
@@ -254,12 +298,13 @@ void DriveTrain::Initialize() {
 class Robot {
     private:
         DriveTrain dt;
+        FEHServo armServo = FEHServo(FEHServo::Servo7);
     public:
         Robot();
         void Checkpoint3();
         void Checkpoint1();
-        void PIDDebug();
         void FlipLever();
+        void StrafeTest();
 };
 
 // Default Constructor
@@ -327,95 +372,26 @@ void Robot::Checkpoint1() {
     //back up from light
     dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
 
+}
 
-    /*
-    // Drive out to hit opposite wall
-    dt.DriveForward(7, 1, 31, FORWARD, CLRCHCKNO);
-    // back up a bit to be aligned with light
-    dt.DriveForward(6.5, 1, 8.5, REVERSE, CLRCHCKNO);
-    // Rotate to orient towards light
-    dt.DriveRotate(30);
-    Sleep(0.26);
-    dt.StopDriving();
-    // Drive into light
-    dt.DriveForward(6, 0, 18, FORWARD, CLRCHCKYES);
-    LCD.Clear();
-    int thisisavar = -1;
-    if (dt.minCdSValue < 0.3) { // RED
-        thisisavar = 200;
-        LCD.SetBackgroundColor(0xFF0000);
-        LCD.Clear();
-    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
-        thisisavar = 100;
-        LCD.SetBackgroundColor(0x0000FF);
-        LCD.Clear();
-    }
-    //back up from light
-    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
-    //turn towards kiosk
-    dt.DriveRotate(-30);
-    Sleep(0.275);
-    dt.StopDriving();
-    //move to the right button
-    if (thisisavar == 200) { // RED
-        dt.DriveForward(7, 1, 10, REVERSE, CLRCHCKNO);
-    } else { // BLUE
-        dt.DriveForward(7, 1, 5, REVERSE, CLRCHCKNO);
-        LCD.Clear();
-    }
-    //turn towards sides to hit the button
-    dt.DriveRotate(-30);
-    Sleep(0.275);
-    dt.StopDriving();
-    
-    //back up from light
-    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);*/
-
-    /*
-    // Drive off kiosk
-    dt.DriveForward(40, 2);
-    Sleep(2.0);
-    dt.StopDriving();
-    // Rotate to face wall
-    dt.DriveRotate(-30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Drive into wall
-    dt.DriveForward(40,0);
-    Sleep(2.0);
-    dt.StopDriving();
-    // Pull off wall
-    dt.DriveForward(-40, 0);
-    Sleep(0.3);
-    dt.StopDriving();
-    // Rotate to face ramp
-    dt.DriveRotate(-30);
-    Sleep(0.9);
-    dt.StopDriving();
-    // Drive down ramp
-    dt.DriveForward(30, 0);
-    Sleep(3.5);
-    dt.StopDriving();*/
-
+void Robot::StrafeTest() {
+    dt.DriveHorizontal(7, 0, 10, FORWARD, CLRCHCKNO);
+    dt.DriveHorizontal(7, 0, 10, REVERSE, CLRCHCKNO);
 }
 
 // Routine for the first checkpoint
 void Robot::Checkpoint3() {
-    FlipLever();
-    
 
-    
-    //dt.armServo.TouchCalibrate();
+    // Initialize on the light
+    dt.Initialize();
 
     // position 1, wait 2 seconds, position 2, 
-     
-    /*
     // Get correct lever from the RPS
     int correctLever = RPS.GetCorrectLever();
 
-    dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 9, FORWARD, CLRCHCKNO);
     dt.DriveRotate(-30);
-    Sleep(1.2);
+    Sleep(1.3);
     dt.StopDriving();
     dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
      
@@ -424,37 +400,43 @@ void Robot::Checkpoint3() {
     {
         // Perform actions to flip left lever
         dt.DriveForward(7, 2, 19, FORWARD, CLRCHCKNO);
+        dt.DriveRotate(30);
+        Sleep(0.2);
+        dt.StopDriving();
+        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
         FlipLever();
     } 
     else if(correctLever == 1)
     {
         // Perform actions to flip middle lever
-        dt.DriveForward(7, 2, 22, FORWARD, CLRCHCKNO);
+        dt.DriveForward(7, 2, 23, FORWARD, CLRCHCKNO);
+        dt.DriveRotate(30);
+        Sleep(0.2);
+        dt.StopDriving();
+        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
         FlipLever();
     }
     else if(correctLever == 2)
     {
-       // Perform actions to flip right lever
-       dt.DriveForward(7, 2, 26, FORWARD, CLRCHCKNO);
-       FlipLever();
+        // Perform actions to flip right lever
+        dt.DriveForward(7, 2, 26, FORWARD, CLRCHCKNO);
+        dt.DriveRotate(30);
+        Sleep(0.2);
+        dt.StopDriving();
+        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
+        FlipLever();
     }
-    */
-}
-
-void Robot::PIDDebug() {
-    //dt.DriveForward(7, 0, 7, FORWARD);
 }
 
 void Robot::FlipLever() {
 
-FEHServo armServo(FEHServo::Servo7);
     Sleep(1.0);
-    armServo.SetDegree(75);
+    armServo.SetDegree(80);
     Sleep(0.6);
-    dt.DriveForward(7, 1, 4, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
     armServo.SetDegree(85);
     Sleep(4.0);
-    dt.DriveForward(7, 1, 4, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 1, REVERSE, CLRCHCKNO);
     Sleep(0.6);
     armServo.SetDegree(35);
     Sleep(1.0);
@@ -466,7 +448,7 @@ int main(void) {
     // declare robot class
     Robot robot;
 
-    // RPS.InitializeTouchMenu();
+    RPS.InitializeTouchMenu();
 
     robot.Checkpoint3();
         
