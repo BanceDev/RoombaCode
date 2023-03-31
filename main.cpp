@@ -443,14 +443,57 @@ void Robot::FlipLever() {
 }
 
 void Robot::Checkpoint4() {
-    armServo.SetDegree(90);
+        // Initialize on the light
+    dt.Initialize();
+    // Drive of launchpad
+    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
+    // Rotate to face ramp
+    dt.DriveRotate(30);
+    Sleep(0.4);
+    dt.StopDriving();
+    // Drive up ramp
+    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
+    // Rotate to face wall
+    dt.DriveRotate(30);
+    Sleep(0.2);
+    dt.StopDriving();
+    // Align with wall
+    dt.DriveForward(7, 2, 10, FORWARD, CLRCHCKNO);
+    // Drive off of wall
+    dt.DriveForward(7, 2, 2, REVERSE, CLRCHCKNO);
+    // Rotate to face passport
+    dt.DriveRotate(30);
+    Sleep(0.25);
+    dt.StopDriving();
+    // Drive back to give room for arm
+    dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
+    // Drop arm
+    armServo.SetDegree(100);
     Sleep(0.5);
-    dt.DriveStrafe(7, 1, 2, FORWARD, CLRCHCKNO);
+    // Drive to get under lever
+    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
+    // Raise arm a little
+    armServo.SetDegree(85);
+    Sleep(0.5);
+    // Drive Forward
+    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
+    // Raise arm more
+    armServo.SetDegree(75);
+    Sleep(0.5);
+    // Drive forward to complete stamping
+    dt.DriveForward(7, 1, 3, REVERSE, CLRCHCKNO);
     armServo.SetDegree(10);
     Sleep(0.5);
-    dt.DriveStrafe(7, 1, 6, FORWARD, CLRCHCKNO);
-    armServo.SetDegree(45);
-    dt.DriveStrafe(7, 1, 8, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
+    dt.DriveStrafe(7, 1, 5, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 6, REVERSE, CLRCHCKNO);
+    armServo.SetDegree(50);
+    Sleep(0.5);
+    dt.DriveRotate(-30);
+    Sleep(0.7);
+    dt.StopDriving();
+
+
 
 }
 
