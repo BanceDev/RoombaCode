@@ -299,7 +299,6 @@ class Robot {
     private:
         DriveTrain dt;
         FEHServo armServo = FEHServo(FEHServo::Servo7);
-        FEHServo luggageServo = FEHServo(FEHServo::Servo6);
     public:
         Robot();
         void Checkpoint3();
@@ -308,6 +307,8 @@ class Robot {
         void StrafeTest();
         void Checkpoint4();
         void Checkpoint5();
+
+        FEHServo luggageServo = FEHServo(FEHServo::Servo6);
 };
 
 // Default Constructor
@@ -501,7 +502,7 @@ void Robot::Checkpoint5() {
     // Initialize on the light
     dt.Initialize();
     // Drive of launchpad
-    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
     // Rotate to face ramp
     dt.DriveRotate(30);
     Sleep(0.4);
@@ -510,22 +511,28 @@ void Robot::Checkpoint5() {
     dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
     // Rotate to face wall
     dt.DriveRotate(30);
-    Sleep(0.2);
+    Sleep(0.3);
     dt.StopDriving();
     // Align with wall
-    dt.DriveForward(7, 2, 10, FORWARD, CLRCHCKNO);
+    dt.DriveForward(9, 2, 10, FORWARD, CLRCHCKNO);
     // Drive off of wall
-    dt.DriveForward(7, 2, 17, REVERSE, CLRCHCKNO);
+    dt.DriveForward(9, 2, 17, REVERSE, CLRCHCKNO);
     // Rotate to orient with luggage
     dt.DriveRotate(30);
-    Sleep(1.3);
+    Sleep(1.4);
     dt.StopDriving();
     //Drive into luggage
-    dt.DriveForward(7, 0, 5, FORWARD, CLRCHCKNO);
+    dt.DriveForward(9, 0, 6, FORWARD, CLRCHCKNO);
+    //Lift Servo Block
+    luggageServo.SetDegree(10);
+    Sleep(0.5);
+    //Reset Servo
+    luggageServo.SetDegree(100);
+    Sleep(0.5);
     // Strafe back to ramp
-    dt.DriveStrafe(7, 0, 15, REVERSE, CLRCHCKNO);
+    dt.DriveStrafe(9, 0, 15, REVERSE, CLRCHCKNO);
     // drive down ramp
-    dt.DriveForward(7, 0, 32, FORWARD, CLRCHCKNO);
+    dt.DriveForward(9, 0, 33, FORWARD, CLRCHCKNO);
 
 }
 
@@ -538,6 +545,7 @@ int main(void) {
     //RPS.InitializeTouchMenu();
 
     robot.Checkpoint5();
+
         
     return 0;
 }
