@@ -301,12 +301,11 @@ class Robot {
         FEHServo armServo = FEHServo(FEHServo::Servo7);
     public:
         Robot();
-        void Checkpoint3();
-        void Checkpoint1();
-        void FlipLever();
-        void StrafeTest();
-        void Checkpoint4();
-        void Checkpoint5();
+        void Lever();
+        void LEDButton();
+        void Passport();
+        void Luggage();
+        void FinalRoutine();
 
         FEHServo luggageServo = FEHServo(FEHServo::Servo6);
 };
@@ -317,25 +316,7 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
-void Robot::Checkpoint1() {
-    // Initialize on the light
-    dt.Initialize();
-    // Drive of launchpad
-    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
-    // Rotate to face ramp
-    dt.DriveRotate(30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Drive up ramp
-    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
-    // Rotate to face wall
-    dt.DriveRotate(-30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Align with wall
-    dt.DriveForward(7.25, 1, 10, REVERSE, CLRCHCKNO);
-
-
+void Robot::LEDButton() {
     
     // Drive out some distance
     dt.DriveForward(7, 1, 11.5, FORWARD, CLRCHCKNO);
@@ -378,162 +359,85 @@ void Robot::Checkpoint1() {
 
 }
 
-void Robot::StrafeTest() {
-    dt.DriveStrafe(7, 0, 10, FORWARD, CLRCHCKNO);
-    dt.DriveStrafe(7, 0, 10, REVERSE, CLRCHCKNO);
-}
-
 // Routine for the first checkpoint
-void Robot::Checkpoint3() {
+void Robot::Lever() {
 
     // Initialize on the light
-    dt.Initialize();
-
+    //dt.Initialize();
     // position 1, wait 2 seconds, position 2, 
     // Get correct lever from the RPS
     int correctLever = RPS.GetCorrectLever();
-
-    dt.DriveForward(7, 0, 9, FORWARD, CLRCHCKNO);
+    // Drive of launchpad
+    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
+    // Rotate to face ramp
     dt.DriveRotate(-30);
-    Sleep(1.3);
+    Sleep(0.72);
     dt.StopDriving();
-    dt.DriveForward(7, 2, 7, REVERSE, CLRCHCKNO);
+    dt.DriveForward(9, 1, 6, FORWARD, CLRCHCKNO);
      
     // Check which lever to flip and perform some action
-    if(correctLever == 0)
-    {
-        // Perform actions to flip left lever
-        dt.DriveForward(7, 2, 19, FORWARD, CLRCHCKNO);
-        dt.DriveRotate(30);
-        Sleep(0.2);
-        dt.StopDriving();
-        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
-        FlipLever();
-    } 
-    else if(correctLever == 1)
-    {
-        // Perform actions to flip middle lever
-        dt.DriveForward(7, 2, 23, FORWARD, CLRCHCKNO);
-        dt.DriveRotate(30);
-        Sleep(0.2);
-        dt.StopDriving();
-        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
-        FlipLever();
+    if(correctLever == 0) {
+        dt.DriveStrafe(9, 1, 18, REVERSE, CLRCHCKNO);
+    } else if(correctLever == 1) {
+        dt.DriveStrafe(9, 1, 23, REVERSE, CLRCHCKNO);
+    } else if(correctLever == 2) {
+        dt.DriveStrafe(9, 1, 26, REVERSE, CLRCHCKNO);
     }
-    else if(correctLever == 2)
-    {
-        // Perform actions to flip right lever
-        dt.DriveForward(7, 2, 26, FORWARD, CLRCHCKNO);
-        dt.DriveRotate(30);
-        Sleep(0.2);
-        dt.StopDriving();
-        dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
-        FlipLever();
-    }
-}
-
-void Robot::FlipLever() {
+    // Flip the lever with 5 second delay
     Sleep(1.0);
     armServo.SetDegree(80);
     Sleep(0.6);
     dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
-    armServo.SetDegree(85);
+    armServo.SetDegree(100);
     Sleep(4.0);
-    dt.DriveForward(7, 1, 1, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 1.5, REVERSE, CLRCHCKNO);
     Sleep(0.6);
     armServo.SetDegree(35);
     Sleep(1.0);
-}
-
-void Robot::Checkpoint4() {
-    // Initialize on the light
-    dt.Initialize();
-    // Drive of launchpad
-    dt.DriveForward(5, 0, 4, FORWARD, CLRCHCKNO);
-    // Rotate to face ramp
+    // Leave lever and align with wall
+    dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
     dt.DriveRotate(30);
     Sleep(0.4);
     dt.StopDriving();
-    // Drive up ramp
-    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
-    // Rotate to face wall
-    dt.DriveRotate(30);
-    Sleep(0.2);
-    dt.StopDriving();
-    // Align with wall
-    dt.DriveForward(7, 2, 10, FORWARD, CLRCHCKNO);
-    // Drive off of wall
-    dt.DriveForward(7, 2, 2, REVERSE, CLRCHCKNO);
-    // Rotate to face passport
-    dt.DriveRotate(30);
-    Sleep(0.25);
-    dt.StopDriving();
-    // Drive back to give room for arm
-    dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
-    // Drop arm
-    armServo.SetDegree(100);
-    Sleep(0.5);
-    // Drive to get under lever
-    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
-    // Raise arm a little
-    armServo.SetDegree(85);
-    Sleep(0.5);
-    // Drive Forward
-    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
-    // Raise arm more
-    armServo.SetDegree(75);
-    Sleep(0.5);
-    // Drive forward to complete stamping
-    dt.DriveForward(7, 1, 3, REVERSE, CLRCHCKNO);
     armServo.SetDegree(10);
     Sleep(0.5);
-    dt.DriveForward(7, 1, 1, FORWARD, CLRCHCKNO);
-    dt.DriveStrafe(7, 1, 5, FORWARD, CLRCHCKNO);
-    dt.DriveForward(7, 1, 6, REVERSE, CLRCHCKNO);
-    armServo.SetDegree(50);
-    Sleep(0.5);
-    dt.DriveRotate(-30);
-    Sleep(0.7);
-    dt.StopDriving();
+    dt.DriveForward(7, 0, 12, REVERSE, CLRCHCKNO);
+}
+
+void Robot::Passport() {
+
 
 }
 
-void Robot::Checkpoint5() {
-    // Initialize on the light
-    dt.Initialize();
-    // Drive of launchpad
-    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
-    // Rotate to face ramp
+void Robot::Luggage() {
+    // Leave wall and rotate to face ramp
+    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
     dt.DriveRotate(30);
-    Sleep(0.4);
-    dt.StopDriving();
-    // Drive up ramp
-    dt.DriveForward(10, 0, 32, FORWARD, CLRCHCKNO);
-    // Rotate to face wall
-    dt.DriveRotate(30);
-    Sleep(0.3);
-    dt.StopDriving();
-    // Align with wall
-    dt.DriveForward(9, 2, 10, FORWARD, CLRCHCKNO);
-    // Drive off of wall
-    dt.DriveForward(9, 2, 17, REVERSE, CLRCHCKNO);
-    // Rotate to orient with luggage
-    dt.DriveRotate(30);
-    Sleep(1.4);
-    dt.StopDriving();
-    //Drive into luggage
-    dt.DriveForward(9, 0, 6, FORWARD, CLRCHCKNO);
+    Sleep(0.6);
+    dt.DriveForward(12, 0, 22, FORWARD, CLRCHCKNO);
+    // Drive into wall at the top
+    dt.DriveRotate(-30);
+    Sleep(0.6);
+    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+    // drive off wall and rotate to face luggage drop
+    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
+    //Strafe over to drop
+    dt.DriveStrafe(7, 0, 5, REVERSE, CLRCHCKNO);
+    // Drive into luggage drop
+    dt.DriveForward(7, 0, 5, FORWARD, CLRCHCKNO);
     //Lift Servo Block
     luggageServo.SetDegree(10);
     Sleep(0.5);
     //Reset Servo
     luggageServo.SetDegree(100);
     Sleep(0.5);
-    // Strafe back to ramp
-    dt.DriveStrafe(9, 0, 15, REVERSE, CLRCHCKNO);
-    // drive down ramp
-    dt.DriveForward(9, 0, 33, FORWARD, CLRCHCKNO);
 
+
+}
+
+void Robot::FinalRoutine() {
+    Lever();
+    Luggage();
 }
 
 
@@ -542,9 +446,9 @@ int main(void) {
     // declare robot class
     Robot robot;
 
-    //RPS.InitializeTouchMenu();
+    RPS.InitializeTouchMenu();
 
-    robot.Checkpoint5();
+    robot.FinalRoutine();
 
         
     return 0;
