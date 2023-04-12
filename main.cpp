@@ -18,6 +18,9 @@ using namespace std;
 #define CLRCHCKYES 1
 #define CLRCHCKNO 0
 
+#define PULSESPEED 25
+#define PULSEDELAY 0.05
+
 
 // class for the Drive train and its functions
 class DriveTrain {
@@ -40,7 +43,7 @@ class DriveTrain {
         float errorSum;
         int motorZeroCounts, motorOneCounts, motorTwoCounts;
 
-        float LEDX, LEDY;
+
 
         AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
@@ -48,6 +51,7 @@ class DriveTrain {
     public:
         float minCdSValue;
         float robotX, robotY, robotH; //heheh more pain.
+        float LEDX, LEDY;
 
         // Delcaration for all the functions below
         DriveTrain();
@@ -62,9 +66,13 @@ class DriveTrain {
         int GetStartColor();
         void checkMinCdSValue();
 
-        void updateRPS();
-        float distanceToLight();
-        float angleToLight();
+        void UpdateRPS();
+        void PulseRotate(int speed, float seconds);
+        void PulseForward(int speed, float seconds, int checkColorYesNo);
+        void PulseStrafe(int speed, float seconds, int checkColorYesNo);
+        void CheckHeading(float heading);
+        void CheckX(float x_coordinate, int orientation, int checkColorYesNo);
+        void CheckY(float y_coordinate, int orientation, int checkColorYesNo);
         
         FEHServo armServo = FEHServo(FEHServo::Servo7);
 
@@ -87,8 +95,8 @@ DriveTrain::DriveTrain() {
     robotX = -1;
     robotY = -1;
     robotH = -1;
-    LEDX = 0; // actual coordinates
-    LEDY = 0;
+    LEDX = 11.63; // actual coordinates
+    LEDY = 60.43;
 }
 
 // Function to stop all the motors
@@ -144,12 +152,12 @@ float DriveTrain::PIDAdjustment(float expectedSpeed, int motor) {
     motorOneCounts = motorOneEncoder.Counts();
     motorTwoCounts = motorTwoEncoder.Counts();
 
-    LCD.WriteAt("actSpeed",0,60);
-    LCD.WriteAt(actSpeed,200,60);
-    LCD.WriteAt("errorSpeed",0,80);
-    LCD.WriteAt(errorSpeed,200,80);
-    LCD.WriteAt("elapsedTime", 0, 100);
-    LCD.WriteAt(prevTime - firstTimeInMove, 200, 100);
+    LCD.WriteAt("X",0,60);
+    LCD.WriteAt(RPS.X(),200,60);
+    LCD.WriteAt("Y",0,80);
+    LCD.WriteAt(RPS.Y(),200,80);
+    LCD.WriteAt("H", 0, 100);
+    LCD.WriteAt(RPS.Heading(), 200, 100);
     LCD.WriteAt("P", 0, 140);
     LCD.WriteAt(pTerm, 200, 140);
 
@@ -298,31 +306,137 @@ void DriveTrain::checkMinCdSValue() {
     }
 }
 
-void DriveTrain::updateRPS() {
+void DriveTrain::UpdateRPS() {
     robotX = RPS.X();
     robotY = RPS.Y();
     robotH = RPS.Heading();
 }
 
-float DriveTrain::distanceToLight() {
-    return sqrt(pow(robotX - LEDX, 2) + pow(LEDY - robotY, 2));
+
+void DriveTrain::PulseRotate(int speed, float seconds) {
+    motor0.SetPercent(speed);
+    motor1.SetPercent(speed);
+    motor2.SetPercent(speed);
+
+    Sleep(seconds);
+
+    StopDriving();
 }
 
-float DriveTrain::angleToLight() {
-    return (atan2(robotX - LEDX, LEDY - robotY) * (180 / M_1_PI));
+void DriveTrain::PulseForward(int speed, float seconds, int checkColorYesNo) {
+    motor1.SetPercent(-speed);
+    motor2.SetPercent(speed);
+
+    Sleep(seconds);
+
+    if (checkColorYesNo == 1) {
+        checkMinCdSValue();
+    }
+
+    StopDriving();
 }
 
-//ADD IN RPS PULSE STUFF HERE
+void DriveTrain::PulseStrafe(int speed, float seconds, int checkColorYesNo) {
+    motor0.SetPercent(-speed);
+    motor1.SetPercent(speed/2);
+    motor2.SetPercent(speed/2);
 
-// pulse rotation
+    Sleep(seconds);
 
-// pulse distance
+    if (checkColorYesNo == 1) {
+        checkMinCdSValue();
+    }
+
+    StopDriving();
+}
+
+/*
+ * Use RPS to move to the desired x_coordinate based on the orientation of the QR code
+ */
+void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo)
+{
+    // Determine the direction of the motors based on the orientation of the QR code
+    int power = PULSESPEED;
+    if (orientation == -1)
+    {
+        power = -PULSESPEED;
+    }
+
+    // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
+    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2)
+    {
+        if (RPS.X() > x_coordinate)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseStrafe(-power, PULSEDELAY, checkColorYesNo);
+        }
+        else if (RPS.X() < x_coordinate)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseStrafe(power, PULSEDELAY, checkColorYesNo);
+        }
+        Sleep(PULSEDELAY*2);
+    }
+}
+
+/*
+ * Use RPS to move to the desired y_coordinate based on the orientation of the QR code
+ */
+void DriveTrain::CheckY(float y_coordinate, int orientation, int checkColorYesNo)
+{
+    // Determine the direction of the motors based on the orientation of the QR code
+    int power = PULSESPEED;
+    if (orientation == -1)
+    {
+        power = -PULSESPEED;
+    }
+
+    // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
+    while ((RPS.Y() < y_coordinate - 1 || RPS.Y() > y_coordinate + 1) && RPS.Y() != -2)
+    {
+        if (RPS.Y() > y_coordinate)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseForward(-power, PULSEDELAY, checkColorYesNo);
+        }
+        else if (RPS.Y() < y_coordinate)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseForward(power, PULSEDELAY, checkColorYesNo);
+        }
+        Sleep(PULSEDELAY*2);
+    }
+}
+
+
+/*
+ * Use RPS to move to the desired heading
+ */
+void DriveTrain::CheckHeading(float heading)
+{
+    int power = PULSESPEED;
+    // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
+    while ((RPS.Heading() < heading - 4 || RPS.Heading() > heading + 4))
+    {
+        if (RPS.Heading() > heading)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseRotate(-power, PULSEDELAY);
+        }
+        else if (RPS.Heading() < heading)
+        {
+            // Pulse the motors for a short duration in the correct direction
+            PulseRotate(power, PULSEDELAY);
+        }
+        Sleep(PULSEDELAY);
+    }
+}
 
 
 // initializes the drive train when the light turns on
 void DriveTrain::Initialize() {
     while (GetStartColor() == OFF || GetStartColor() == BLUE) {
-        updateRPS();
+        UpdateRPS();
     }
 
     if (abs(LEDX - (robotX - 15.87)) <= 0.5 && abs(LEDY - (robotY + 51.93)) <= 0.5) {
@@ -363,11 +477,11 @@ void Robot::Lever() {
     // position 1, wait 2 seconds, position 2, 
     // Get correct lever from the RPS
     int correctLever = RPS.GetCorrectLever();
-    // Drive of launchpad
-    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
+    // Drive off launchpad
+    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
     // Rotate to face ramp
     dt.DriveRotate(-30);
-    Sleep(0.72);
+    Sleep(0.71);
     dt.StopDriving();
     dt.DriveForward(9, 1, 6, FORWARD, CLRCHCKNO);
      
@@ -436,21 +550,13 @@ void Robot::LEDButton() {
     dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO); // this should be removed with RPS
 
     ///RPS MOVEMENT
-
-    //drive backwards maybe 8 inches
-
-    //theta = angleToLight
-
-    //pulse to rotate to theta function
-
-    //pulse driving backwards until distanceToLight ~ 0 function
-
-    //pulse antirotate theta
-
+    dt.CheckX(dt.LEDX, -1, CLRCHCKNO);
 
     // Drive to light
     dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES); //should be removed with RPS
-    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
+    dt.CheckX(dt.LEDX, -1, CLRCHCKNO);
+    dt.CheckY(dt.LEDY, -1, CLRCHCKYES);
+ 
 
     LCD.Clear();
 
@@ -476,13 +582,16 @@ void Robot::LEDButton() {
         LCD.Clear();
     }
 
-    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
-    //dt.DriveForward(7, 0, 8, FORWARD, CLRCHCKNO); //og: 3
+    dt.DriveForward(7, 0, 6, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 0, 8.25, FORWARD, CLRCHCKNO);
+    if (thisisavar == 200) { // RED
+        dt.DriveStrafe(7, 0, 5, FORWARD, CLRCHCKNO);
+    }
 
 }
 
 void Robot::Passport() {
-    dt.DriveForward(7, 0, 8.25, FORWARD, CLRCHCKNO);
+
     dt.DriveForward(7, 2, 15, REVERSE, CLRCHCKNO);
 
     Sleep(2.0);
@@ -547,23 +656,12 @@ void Robot::Passport() {
     
     dt.DriveForward(7, 0, 40, REVERSE, CLRCHCKNO);
 
-
-    /*
-    dt.DriveRotate(30);
-    Sleep(1.3);
-    dt.StopDriving();
-    armServo.SetDegree(100);
-    dt.DriveStrafe(7, 1, 8, REVERSE, CLRCHCKNO);
-    dt.DriveForward(4, 1, 3.5, REVERSE, CLRCHCKNO);
-    armServo.SetDegree(50);
-    Sleep(0.5);
-    dt.DriveStrafe(7, 1, 3, FORWARD, CLRCHCKNO);*/
 }
 
 void Robot::FinalRoutine() {
-    //Lever();
-    //Luggage();
-    //LEDButton();
+    Lever();
+    Luggage();
+    LEDButton();
     Passport();
 }
 
@@ -574,9 +672,7 @@ int main(void) {
     Robot robot;
 
     RPS.InitializeTouchMenu();
-
     robot.FinalRoutine();
-
         
     return 0;
 }
