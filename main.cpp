@@ -40,11 +40,14 @@ class DriveTrain {
         float errorSum;
         int motorZeroCounts, motorOneCounts, motorTwoCounts;
 
+        float LEDX, LEDY;
+
         AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
 
     public:
         float minCdSValue;
+        float robotX, robotY, robotH; //heheh more pain.
 
         // Delcaration for all the functions below
         DriveTrain();
@@ -58,6 +61,10 @@ class DriveTrain {
         void ResetPID();
         int GetStartColor();
         void checkMinCdSValue();
+
+        void updateRPS();
+        float distanceToLight();
+        float angleToLight();
         
         FEHServo armServo = FEHServo(FEHServo::Servo7);
 
@@ -76,6 +83,12 @@ DriveTrain::DriveTrain() {
     iConst = 0.05;
     dConst = 0.2;
     minCdSValue = 3.3;
+
+    robotX = -1;
+    robotY = -1;
+    robotH = -1;
+    LEDX = 0;
+    LEDY = 0;
 }
 
 // Function to stop all the motors
@@ -285,9 +298,34 @@ void DriveTrain::checkMinCdSValue() {
     }
 }
 
+void DriveTrain::updateRPS() {
+    robotX = RPS.X();
+    robotY = RPS.Y();
+    robotH = RPS.Heading();
+}
+
+float DriveTrain::distanceToLight() {
+    return sqrt(pow(robotX - LEDX, 2) + pow(LEDY - robotY, 2));
+}
+
+float DriveTrain::angleToLight() {
+    return (atan2(robotX - LEDX, LEDY - robotY) * (180 / M_1_PI));
+}
+
+//ADD IN RPS PULSE STUFF HERE
+
+// pulse rotation
+
+// pulse distance
+
+
 // initializes the drive train when the light turns on
 void DriveTrain::Initialize() {
-    while (GetStartColor() == OFF || GetStartColor() == BLUE) {}
+    while (GetStartColor() == OFF || GetStartColor() == BLUE) {
+        updateRPS();
+    }
+    LEDX = robotX - 15.87; // hard code the position of the LED based off of initial RPS position
+    LEDY = robotY + 51.93;
 }
 
 
@@ -401,9 +439,23 @@ void Robot::Luggage() {
 // Routine for the first checkpoint
 void Robot::LEDButton() {
     //Strafe over to align with light
-    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO);
+    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO); // this should be removed with RPS
+
+    ///RPS MOVEMENT
+
+    //drive backwards maybe 8 inches
+
+    //theta = angleToLight
+
+    //pulse to rotate to theta function
+
+    //pulse driving backwards until distanceToLight ~ 0 function
+
+    //pulse antirotate theta
+
+
     // Drive to light
-    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES);
+    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES); //should be removed with RPS
     dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
 
     LCD.Clear();
