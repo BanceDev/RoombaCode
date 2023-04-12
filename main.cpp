@@ -416,15 +416,6 @@ void Robot::Luggage() {
     Sleep(0.8);
     dt.StopDriving();
 
-
-
-    /*dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
-    dt.DriveRotate(-30);
-    Sleep(0.8);
-    dt.StopDriving();
-    //Strafe over to drop
-    dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);*/
-
     // Drive into luggage drop
     dt.DriveForward(7, 0, 5, FORWARD, CLRCHCKNO);
     //Lift Servo Block
@@ -436,7 +427,7 @@ void Robot::Luggage() {
 
 }
 
-// Routine for the first checkpoint
+
 void Robot::LEDButton() {
     //Strafe over to align with light
     dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO); // this should be removed with RPS
