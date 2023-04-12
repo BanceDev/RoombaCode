@@ -87,7 +87,7 @@ DriveTrain::DriveTrain() {
     robotX = -1;
     robotY = -1;
     robotH = -1;
-    LEDX = 0;
+    LEDX = 0; // actual coordinates
     LEDY = 0;
 }
 
@@ -324,8 +324,11 @@ void DriveTrain::Initialize() {
     while (GetStartColor() == OFF || GetStartColor() == BLUE) {
         updateRPS();
     }
-    LEDX = robotX - 15.87; // hard code the position of the LED based off of initial RPS position
-    LEDY = robotY + 51.93;
+
+    if (abs(LEDX - (robotX - 15.87)) <= 0.5 && abs(LEDY - (robotY + 51.93)) <= 0.5) {
+        LEDX = robotX - 15.87; // hard code the position of the LED based off of initial RPS position
+        LEDY = robotY + 51.93;
+    }
 }
 
 
@@ -512,8 +515,8 @@ void Robot::Passport() {
     
     Sleep(2.0);
 
-    dt.DriveForward(13, 1, 3.75, REVERSE, CLRCHCKNO);
-    dt.DriveForward(13, 1, 5.25, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 3.75, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 5.25, FORWARD, CLRCHCKNO);
 
 
     //you can split this into a separate method if u want (going home)   
