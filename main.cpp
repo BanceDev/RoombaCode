@@ -315,43 +315,6 @@ Robot::Robot() {
 }
 
 // Routine for the first checkpoint
-void Robot::LEDButton() {
-    //Strafe over to align with light
-    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO);
-    // Drive to light
-    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES);
-    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
-
-    LCD.Clear();
-
-    int thisisavar = -1;
-
-    if (dt.minCdSValue < 0.3) { // RED
-        thisisavar = 200;
-        LCD.SetBackgroundColor(0xFF0000);
-        LCD.Clear();
-    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
-        thisisavar = 100;
-        LCD.SetBackgroundColor(0x0000FF);
-        LCD.Clear();
-    }
-    
-
-    //move to the right button
-    if (thisisavar == 200) { // RED
-        dt.DriveStrafe(7, 0, 11, REVERSE, CLRCHCKNO);
-        LCD.Clear();
-    } else { // BLUE
-        dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);
-        LCD.Clear();
-    }
-
-    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
-    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
-
-}
-
-// Routine for the first checkpoint
 void Robot::Lever() {
 
     // Initialize on the light
@@ -396,37 +359,34 @@ void Robot::Lever() {
     dt.DriveForward(7, 0, 12, REVERSE, CLRCHCKNO);
 }
 
-void Robot::Passport() {
-    dt.DriveRotate(30);
-    Sleep(1.3);
-    dt.StopDriving();
-    armServo.SetDegree(100);
-    dt.DriveStrafe(7, 1, 6, REVERSE, CLRCHCKNO);
-    dt.DriveForward(4, 1, 2, REVERSE, CLRCHCKNO);
-    armServo.SetDegree(50);
-    Sleep(0.5);
-    dt.DriveStrafe(7, 1, 3, FORWARD, CLRCHCKNO);
-}
-
 void Robot::Luggage() {
     // Leave wall and rotate to face ramp
     dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
-    dt.DriveRotate(30);
+    dt.DriveRotate(30); //positive turns counterclockwise
     Sleep(0.8);
     dt.StopDriving();
     dt.DriveForward(10, 0, 22, FORWARD, CLRCHCKNO);
     // Drive into wall at the top
     dt.DriveRotate(-30);
-    Sleep(0.8);
+    Sleep(0.85); //0.8
     dt.StopDriving();
     dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
     // drive off wall and rotate to face luggage drop
-    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
+
+    dt.DriveForward(7, 0, 10, FORWARD, CLRCHCKNO);
+    dt.DriveRotate(-30);
+    Sleep(0.8);
+    dt.StopDriving();
+
+
+
+    /*dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
     dt.DriveRotate(-30);
     Sleep(0.8);
     dt.StopDriving();
     //Strafe over to drop
-    dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);
+    dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);*/
+
     // Drive into luggage drop
     dt.DriveForward(7, 0, 5, FORWARD, CLRCHCKNO);
     //Lift Servo Block
@@ -438,10 +398,126 @@ void Robot::Luggage() {
 
 }
 
+// Routine for the first checkpoint
+void Robot::LEDButton() {
+    //Strafe over to align with light
+    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO);
+    // Drive to light
+    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES);
+    dt.DriveForward(7, 0, 4, FORWARD, CLRCHCKNO);
+
+    LCD.Clear();
+
+    int thisisavar = -1;
+
+    if (dt.minCdSValue < 0.3) { // RED
+        thisisavar = 200;
+        LCD.SetBackgroundColor(0xFF0000);
+        LCD.Clear();
+    } else if (0.3 < dt.minCdSValue && dt.minCdSValue < 1.5) { // BLUE
+        thisisavar = 100;
+        LCD.SetBackgroundColor(0x0000FF);
+        LCD.Clear();
+    }
+    
+
+    //move to the right button
+    if (thisisavar == 200) { // RED
+        dt.DriveStrafe(7, 0, 11, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    } else { // BLUE
+        dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);
+        LCD.Clear();
+    }
+
+    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+    //dt.DriveForward(7, 0, 8, FORWARD, CLRCHCKNO); //og: 3
+
+}
+
+void Robot::Passport() {
+    dt.DriveForward(7, 0, 8.25, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 2, 15, REVERSE, CLRCHCKNO);
+
+    Sleep(2.0);
+
+    dt.DriveRotate(-30);
+    Sleep(0.8);
+    dt.StopDriving();
+
+    Sleep(2.0);
+    
+    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+
+    Sleep(2.0);
+    
+    dt.DriveForward(7, 0, 4.5, FORWARD, CLRCHCKNO);
+
+    Sleep(2.0);
+    
+    armServo.SetDegree(100);
+
+    Sleep(2.0);
+
+    dt.DriveRotate(-30); //30 deg turn
+    Sleep(0.275);
+    dt.StopDriving();
+    
+    Sleep(2.0);
+
+    armServo.SetDegree(68.6);
+    
+    Sleep(2.0);
+
+    dt.DriveForward(13, 1, 3.75, REVERSE, CLRCHCKNO);
+    dt.DriveForward(13, 1, 5.25, FORWARD, CLRCHCKNO);
+
+
+    //you can split this into a separate method if u want (going home)   
+
+    Sleep(2.0);
+    
+    armServo.SetDegree(15);
+
+    dt.DriveRotate(30); //30 deg turn
+    Sleep(0.275);
+    dt.StopDriving();
+
+    Sleep(2.0);
+
+    dt.DriveForward(7, 0, 6.5, REVERSE, CLRCHCKNO);
+
+    Sleep(2.0);
+    
+    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
+
+    Sleep(2.0);
+
+    dt.DriveRotate(-30);
+    Sleep(0.8);
+    dt.StopDriving();
+
+    Sleep(2.0);
+    
+    dt.DriveForward(7, 0, 40, REVERSE, CLRCHCKNO);
+
+
+    /*
+    dt.DriveRotate(30);
+    Sleep(1.3);
+    dt.StopDriving();
+    armServo.SetDegree(100);
+    dt.DriveStrafe(7, 1, 8, REVERSE, CLRCHCKNO);
+    dt.DriveForward(4, 1, 3.5, REVERSE, CLRCHCKNO);
+    armServo.SetDegree(50);
+    Sleep(0.5);
+    dt.DriveStrafe(7, 1, 3, FORWARD, CLRCHCKNO);*/
+}
+
 void Robot::FinalRoutine() {
-    Lever();
-    Luggage();
-    LEDButton();
+    //Lever();
+    //Luggage();
+    //LEDButton();
     Passport();
 }
 
