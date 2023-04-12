@@ -20,6 +20,7 @@ using namespace std;
 
 #define PULSESPEED 25
 #define PULSEDELAY 0.05
+#define PULSEWAIT 0.125
 
 
 // class for the Drive train and its functions
@@ -375,7 +376,7 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
             // Pulse the motors for a short duration in the correct direction
             PulseStrafe(power, PULSEDELAY, checkColorYesNo);
         }
-        Sleep(PULSEDELAY*2);
+        Sleep(PULSEWAIT);
     }
 }
 
@@ -404,7 +405,7 @@ void DriveTrain::CheckY(float y_coordinate, int orientation, int checkColorYesNo
             // Pulse the motors for a short duration in the correct direction
             PulseForward(power, PULSEDELAY, checkColorYesNo);
         }
-        Sleep(PULSEDELAY*2);
+        Sleep(PULSEWAIT);
     }
 }
 
@@ -428,7 +429,7 @@ void DriveTrain::CheckHeading(float heading)
             // Pulse the motors for a short duration in the correct direction
             PulseRotate(power, PULSEDELAY);
         }
-        Sleep(PULSEDELAY);
+        Sleep(PULSEWAIT);
     }
 }
 
@@ -484,6 +485,8 @@ void Robot::Lever() {
     Sleep(0.71);
     dt.StopDriving();
     dt.DriveForward(9, 1, 6, FORWARD, CLRCHCKNO);
+
+    dt.DriveForward(7, 1, 2.5, FORWARD, CLRCHCKNO);
      
     // Check which lever to flip and perform some action
     if(correctLever == 0) {
@@ -547,13 +550,15 @@ void Robot::Luggage() {
 
 void Robot::LEDButton() {
     //Strafe over to align with light
-    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO); // this should be removed with RPS
+    dt.DriveStrafe(7, 0, 2, FORWARD, CLRCHCKNO);
 
     ///RPS MOVEMENT
     dt.CheckX(dt.LEDX, -1, CLRCHCKNO);
 
+    //should we check heading here too?
+
     // Drive to light
-    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES); //should be removed with RPS
+    dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES);
     dt.CheckX(dt.LEDX, -1, CLRCHCKNO);
     dt.CheckY(dt.LEDY, -1, CLRCHCKYES);
  
@@ -583,7 +588,7 @@ void Robot::LEDButton() {
     }
 
     dt.DriveForward(7, 0, 6, REVERSE, CLRCHCKNO);
-    dt.DriveForward(7, 0, 8.25, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 9, FORWARD, CLRCHCKNO);
     if (thisisavar == 200) { // RED
         dt.DriveStrafe(7, 0, 5, FORWARD, CLRCHCKNO);
     }
@@ -592,69 +597,51 @@ void Robot::LEDButton() {
 
 void Robot::Passport() {
 
+    //diagonally move to beneath passport
     dt.DriveForward(7, 2, 15, REVERSE, CLRCHCKNO);
 
-    Sleep(2.0);
-
+    //wall align
     dt.DriveRotate(-30);
     Sleep(0.8);
     dt.StopDriving();
-
-    Sleep(2.0);
-    
     dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
-
-    Sleep(2.0);
-    
     dt.DriveForward(7, 0, 4.5, FORWARD, CLRCHCKNO);
-
-    Sleep(2.0);
     
+    //drop arm
     armServo.SetDegree(100);
+    Sleep(0.5);
 
-    Sleep(2.0);
-
-    dt.DriveRotate(-30); //30 deg turn
+    //turns towards passport
+    dt.DriveRotate(-30); 
     Sleep(0.275);
     dt.StopDriving();
-    
-    Sleep(2.0);
 
+    //raise passport
     armServo.SetDegree(68.6);
-    
-    Sleep(2.0);
+    Sleep(0.5);
 
+    //push it all the way and back
     dt.DriveForward(7, 1, 3.75, REVERSE, CLRCHCKNO);
     dt.DriveForward(7, 1, 5.25, FORWARD, CLRCHCKNO);
 
-
-    //you can split this into a separate method if u want (going home)   
-
-    Sleep(2.0);
-    
+    //raise arm
     armServo.SetDegree(15);
 
+    //wall align
     dt.DriveRotate(30); //30 deg turn
     Sleep(0.275);
     dt.StopDriving();
-
-    Sleep(2.0);
-
     dt.DriveForward(7, 0, 6.5, REVERSE, CLRCHCKNO);
-
-    Sleep(2.0);
-    
     dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
 
-    Sleep(2.0);
-
+    //rotate towards final button
     dt.DriveRotate(-30);
     Sleep(0.8);
     dt.StopDriving();
-
-    Sleep(2.0);
     
-    dt.DriveForward(7, 0, 40, REVERSE, CLRCHCKNO);
+    //drive and hit the button
+    dt.DriveForward(7, 0, 30, REVERSE, CLRCHCKNO);
+    dt.DriveForward(10, 0, 10, REVERSE, CLRCHCKNO);
 
 }
 
