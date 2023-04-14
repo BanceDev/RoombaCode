@@ -498,10 +498,10 @@ void Robot::Lever() {
     Sleep(1.0);
     armServo.SetDegree(80);
     Sleep(0.6);
-    dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 2.5, FORWARD, CLRCHCKNO);
     armServo.SetDegree(100);
     Sleep(4.0);
-    dt.DriveForward(7, 1, 1.5, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
     Sleep(0.6);
     armServo.SetDegree(35);
     Sleep(1.0);
