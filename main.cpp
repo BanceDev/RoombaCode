@@ -20,7 +20,7 @@ using namespace std;
 
 #define PULSESPEED 25
 #define PULSEDELAY 0.05
-#define PULSEWAIT 0.125
+#define PULSEWAIT 0.2
 
 
 // class for the Drive train and its functions
@@ -358,13 +358,14 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
 {
     // Determine the direction of the motors based on the orientation of the QR code
     int power = PULSESPEED;
+    int ticks = 0;
     if (orientation == -1)
     {
         power = -PULSESPEED;
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2)
+    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && ticks <= 10)
     {
         if (RPS.X() > x_coordinate)
         {
@@ -377,6 +378,7 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
             PulseStrafe(power, PULSEDELAY, checkColorYesNo);
         }
         Sleep(PULSEWAIT);
+        ticks++;
     }
 }
 
@@ -417,7 +419,7 @@ void DriveTrain::CheckHeading(float heading)
 {
     int power = PULSESPEED;
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.Heading() < heading - 4 || RPS.Heading() > heading + 4))
+    while ((RPS.Heading() < heading - 3 || RPS.Heading() > heading + 3))
     {
         if (RPS.Heading() > heading)
         {
@@ -485,25 +487,24 @@ void Robot::Lever() {
     Sleep(0.71);
     dt.StopDriving();
     dt.DriveForward(9, 1, 6, FORWARD, CLRCHCKNO);
-
-    dt.DriveForward(7, 1, 2.5, FORWARD, CLRCHCKNO);
      
     // Check which lever to flip and perform some action
     if(correctLever == 0) {
         dt.DriveStrafe(9, 1, 18, REVERSE, CLRCHCKNO);
     } else if(correctLever == 1) {
-        dt.DriveStrafe(9, 1, 23, REVERSE, CLRCHCKNO);
+        dt.DriveStrafe(9, 1, 21.5, REVERSE, CLRCHCKNO);
     } else if(correctLever == 2) {
         dt.DriveStrafe(9, 1, 26, REVERSE, CLRCHCKNO);
+        dt.DriveForward(7, 1, 0.7, REVERSE, CLRCHCKNO);
     }
     // Flip the lever with 5 second delay
     Sleep(1.0);
     armServo.SetDegree(80);
     Sleep(0.6);
-    dt.DriveForward(7, 1, 2, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 2.5, FORWARD, CLRCHCKNO);
     armServo.SetDegree(100);
     Sleep(4.0);
-    dt.DriveForward(7, 1, 1.5, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 2, REVERSE, CLRCHCKNO);
     Sleep(0.6);
     armServo.SetDegree(35);
     Sleep(1.0);
@@ -528,7 +529,7 @@ void Robot::Luggage() {
     dt.DriveRotate(-30);
     Sleep(0.85); //0.8
     dt.StopDriving();
-    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 0, 8, REVERSE, CLRCHCKNO);
     // drive off wall and rotate to face luggage drop
 
     dt.DriveForward(7, 0, 10, FORWARD, CLRCHCKNO);
@@ -537,12 +538,12 @@ void Robot::Luggage() {
     dt.StopDriving();
 
     // Drive into luggage drop
-    dt.DriveForward(7, 0, 5, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
     //Lift Servo Block
-    luggageServo.SetDegree(10);
+    luggageServo.SetDegree(100);
     Sleep(0.5);
     //Reset Servo
-    luggageServo.SetDegree(100);
+    luggageServo.SetDegree(10);
     Sleep(0.5);
 
 }
@@ -559,7 +560,7 @@ void Robot::LEDButton() {
 
     // Drive to light
     dt.DriveForward(7, 0, 21, REVERSE, CLRCHCKYES);
-    dt.CheckX(dt.LEDX, -1, CLRCHCKNO);
+    dt.CheckX(dt.LEDX, -1, CLRCHCKYES);
     dt.CheckY(dt.LEDY, -1, CLRCHCKYES);
  
 
@@ -588,10 +589,11 @@ void Robot::LEDButton() {
     }
 
     dt.DriveForward(7, 0, 6, REVERSE, CLRCHCKNO);
-    dt.DriveForward(7, 0, 9, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
     if (thisisavar == 200) { // RED
-        dt.DriveStrafe(7, 0, 5, FORWARD, CLRCHCKNO);
+        dt.DriveStrafe(7, 0, 6, FORWARD, CLRCHCKNO);
     }
+    dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
 
 }
 
@@ -604,16 +606,19 @@ void Robot::Passport() {
     dt.DriveRotate(-30);
     Sleep(0.8);
     dt.StopDriving();
-    dt.DriveForward(7, 0, 5, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 0, 7, REVERSE, CLRCHCKNO);
     dt.DriveForward(7, 0, 4.5, FORWARD, CLRCHCKNO);
     
     //drop arm
     armServo.SetDegree(100);
     Sleep(0.5);
 
+    // strafe to right
+    dt.DriveStrafe(7, 0, 1, FORWARD, CLRCHCKNO);
+
     //turns towards passport
     dt.DriveRotate(-30); 
-    Sleep(0.275);
+    Sleep(0.3);
     dt.StopDriving();
 
     //raise passport
@@ -621,8 +626,8 @@ void Robot::Passport() {
     Sleep(0.5);
 
     //push it all the way and back
-    dt.DriveForward(7, 1, 3.75, REVERSE, CLRCHCKNO);
-    dt.DriveForward(7, 1, 5.25, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 1, 4.25, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 1, 5.75, FORWARD, CLRCHCKNO);
 
     //raise arm
     armServo.SetDegree(15);
@@ -641,7 +646,7 @@ void Robot::Passport() {
     
     //drive and hit the button
     dt.DriveForward(7, 0, 30, REVERSE, CLRCHCKNO);
-    dt.DriveForward(10, 0, 10, REVERSE, CLRCHCKNO);
+    dt.DriveForward(15, 0, 10, REVERSE, CLRCHCKNO);
 
 }
 
