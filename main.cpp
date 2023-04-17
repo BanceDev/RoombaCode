@@ -44,8 +44,6 @@ class DriveTrain {
         float errorSum;
         int motorZeroCounts, motorOneCounts, motorTwoCounts;
 
-
-
         AnalogInputPin CdS = AnalogInputPin(FEHIO::P3_0);
                 
 
@@ -364,7 +362,7 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2)
+    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && RPS.X() != -1)
     {
         if (RPS.X() > x_coordinate)
         {
@@ -642,8 +640,11 @@ void Robot::Passport() {
     dt.StopDriving();
     
     //drive and hit the button
-    dt.DriveForward(7, 0, 30, REVERSE, CLRCHCKNO);
-    dt.DriveForward(15, 0, 10, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 0, 40, REVERSE, CLRCHCKNO);
+    dt.DriveRotate(30);
+    Sleep(0.4);
+    dt.StopDriving();
+    dt.DriveForward(15, 0, 5, REVERSE, CLRCHCKNO);
 
 }
 
