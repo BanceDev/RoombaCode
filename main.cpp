@@ -363,7 +363,7 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && RPS.X() != -1 && pulseCount > 3)
+    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && (RPS.X() != -1 || pulseCount > 3))
     {
         if (RPS.X() > x_coordinate)
         {
@@ -394,7 +394,7 @@ void DriveTrain::CheckY(float y_coordinate, int orientation, int checkColorYesNo
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.Y() < y_coordinate - 1 || RPS.Y() > y_coordinate + 1) && RPS.Y() != -2 && (RPS.Y() != -1 && pulseCount > 3))
+    while ((RPS.Y() < y_coordinate - 1 || RPS.Y() > y_coordinate + 1) && RPS.Y() != -2 && (RPS.Y() != -1 || pulseCount > 3))
     {
         if (RPS.Y() > y_coordinate)
         {
