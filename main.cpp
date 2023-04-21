@@ -356,13 +356,14 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
 {
     // Determine the direction of the motors based on the orientation of the QR code
     int power = PULSESPEED;
+    int pulseCount = 0;
     if (orientation == -1)
     {
         power = -PULSESPEED;
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && RPS.X() != -1)
+    while ((RPS.X() < x_coordinate - 0.5 || RPS.X() > x_coordinate + 0.5) && RPS.X() != -2 && RPS.X() != -1 && pulseCount > 3)
     {
         if (RPS.X() > x_coordinate)
         {
@@ -375,6 +376,7 @@ void DriveTrain::CheckX(float x_coordinate, int orientation, int checkColorYesNo
             PulseStrafe(power, PULSEDELAY, checkColorYesNo);
         }
         Sleep(PULSEWAIT);
+        pulseCount++;
     }
 }
 
@@ -385,13 +387,14 @@ void DriveTrain::CheckY(float y_coordinate, int orientation, int checkColorYesNo
 {
     // Determine the direction of the motors based on the orientation of the QR code
     int power = PULSESPEED;
+    int pulseCount = 0;
     if (orientation == -1)
     {
         power = -PULSESPEED;
     }
 
     // Check if receiving proper RPS coordinates and whether the robot is within an acceptable range
-    while ((RPS.Y() < y_coordinate - 1 || RPS.Y() > y_coordinate + 1) && RPS.Y() != -2)
+    while ((RPS.Y() < y_coordinate - 1 || RPS.Y() > y_coordinate + 1) && RPS.Y() != -2 && (RPS.Y() != -1 && pulseCount > 3))
     {
         if (RPS.Y() > y_coordinate)
         {
@@ -404,6 +407,7 @@ void DriveTrain::CheckY(float y_coordinate, int orientation, int checkColorYesNo
             PulseForward(power, PULSEDELAY, checkColorYesNo);
         }
         Sleep(PULSEWAIT);
+        pulseCount++;
     }
 }
 
@@ -491,6 +495,7 @@ void Robot::Lever() {
         dt.DriveStrafe(9, 1, 21.5, REVERSE, CLRCHCKNO);
     } else if(correctLever == 2) {
         dt.DriveStrafe(9, 1, 26, REVERSE, CLRCHCKNO);
+        dt.DriveForward(7, 1, 0.5, REVERSE, CLRCHCKNO);
     }
     // Flip the lever with 5 second delay
     Sleep(1.0);
@@ -519,7 +524,7 @@ void Robot::Luggage() {
     dt.DriveRotate(30); //positive turns counterclockwise
     Sleep(0.8);
     dt.StopDriving();
-    dt.DriveForward(10, 0, 22, FORWARD, CLRCHCKNO);
+    dt.DriveForward(10, 0, 23, FORWARD, CLRCHCKNO);
     // Drive into wall at the top
     dt.DriveRotate(-30);
     Sleep(0.85); //0.8
@@ -533,7 +538,7 @@ void Robot::Luggage() {
     dt.StopDriving();
 
     // Drive into luggage drop
-    dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
+    dt.DriveForward(7, 0, 7.5, FORWARD, CLRCHCKNO);
     //Lift Servo Block
     luggageServo.SetDegree(100);
     Sleep(0.5);
@@ -576,17 +581,17 @@ void Robot::LEDButton() {
 
     //move to the right button
     if (thisisavar == 200) { // RED
-        dt.DriveStrafe(7, 0, 11, REVERSE, CLRCHCKNO);
+        dt.DriveStrafe(7, 0, 10, REVERSE, CLRCHCKNO);
         LCD.Clear();
     } else { // BLUE
-        dt.DriveStrafe(7, 0, 6, REVERSE, CLRCHCKNO);
+        dt.DriveStrafe(7, 0, 5, REVERSE, CLRCHCKNO);
         LCD.Clear();
     }
 
-    dt.DriveForward(7, 0, 6, REVERSE, CLRCHCKNO);
+    dt.DriveForward(7, 0, 7, REVERSE, CLRCHCKNO);
     dt.DriveForward(7, 0, 3, FORWARD, CLRCHCKNO);
     if (thisisavar == 200) { // RED
-        dt.DriveStrafe(7, 0, 6, FORWARD, CLRCHCKNO);
+        dt.DriveStrafe(7, 0, 4.5, FORWARD, CLRCHCKNO);
     }
     dt.DriveForward(7, 0, 7, FORWARD, CLRCHCKNO);
 
@@ -609,7 +614,7 @@ void Robot::Passport() {
     Sleep(0.5);
 
     // strafe to right
-    dt.DriveStrafe(7, 0, 1, FORWARD, CLRCHCKNO);
+    dt.DriveStrafe(7, 0, 1.3, FORWARD, CLRCHCKNO);
 
     //turns towards passport
     dt.DriveRotate(-30); 
